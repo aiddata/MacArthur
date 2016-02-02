@@ -1,0 +1,10 @@
+*.shp
+*.dbf
+*.shx
+*.prj
+*.qpj
+*.cpg
+*.tif
+*.aux.xml
+*.zip
+*.csv

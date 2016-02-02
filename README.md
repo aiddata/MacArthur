@@ -11,7 +11,7 @@ South East Asia (sea)
 - Laos
 - Myanmar
 - Thailand
-- Vietnam
+- Vietnam  
 
 Africa (africa)
 - Burundi
@@ -21,14 +21,15 @@ Africa (africa)
 - Rwanda
 - Tanzania
 - Uganda
-- Zambia
+- Zambia  
 
 South America (sa)
 - Bolivia
 - Colombia
 - Ecuador
 - Peru
-- Venezuela
+- Venezuela  
+
 
 1. Download global GADM files (http://biogeo.ucdavis.edu/data/gadm2.8/gadm28_levels.shp.zip)
 For each region:
@@ -51,12 +52,12 @@ dependencies
 1. download and mosaic hansen data  
 `bash ./hansen/get_hansen_for_bbox`
 2. run extracts  
-   `python ./hansen/run_hansen_extract.py`
+`python ./hansen/run_hansen_extract.py`
 
 
 ## ./analysis_data/
 
 1. run extract job(s) on sciclone
 2. run extract merge script
-   `python ./analysis_data/merge_data.py
+`python ./analysis_data/merge_data.py`
 

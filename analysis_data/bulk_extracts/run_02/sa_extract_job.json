@@ -7,7 +7,7 @@
         "max_node_count": 6, 
         "ppn_override": 0, 
         "walltime_override": true, 
-        "walltime": 180
+        "walltime": 10
     }, 
     "defaults": {
         "bnd_absolute": "/sciclone/aiddata10/REU/projects/macarthur/shps/sa_grid.shp", 

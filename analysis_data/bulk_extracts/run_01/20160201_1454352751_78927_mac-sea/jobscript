@@ -1,0 +1,10 @@
+#!/bin/tcsh
+#PBS -N asg:ex:mac-sea
+#PBS -l nodes=4:xeon:compute:ppn=8
+#PBS -l walltime=180:00:00
+#PBS -j oe
+
+
+cd $PBS_O_WORKDIR
+
+mvp2run -m cyclic -c 32 python-mpi ../../../runscript.py /sciclone/home00/sgoodman/work/extracts/gen3.3/extract/ioe/macarthur/20160201_1454352751_78927_mac-sea/config.json

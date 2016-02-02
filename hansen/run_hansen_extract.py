@@ -19,7 +19,7 @@ for rid in rlist:
     raster1 = base_dir + "/hansen/data/treecover2000/"+rid+"_mosaic.tif"
     raster2 = base_dir + "/hansen/data/loss/"+rid+"_mosaic.tif"
 
-    raster3 = base_dir + "/hansen/data/ltdr_ndvi_yearly_max_2000.tif"
+    # raster3 = base_dir + "/hansen/data/ltdr_ndvi_yearly_max_2000.tif"
 
     cats = {0: '0', 1: '1'}
 
@@ -28,7 +28,7 @@ for rid in rlist:
 
     loss = rs.zonal_stats(vector1, raster2, categorical=True, category_map=cats, geojson_out=True)
 
-    ltdr = rs.zonal_stats(vector2, raster3, stats='mean', geojson_out=True) 
+    # ltdr = rs.zonal_stats(vector2, raster3, stats='mean', geojson_out=True) 
 
 
     tmp_data = [i['properties'] for i in treecover2000]
@@ -45,7 +45,7 @@ for rid in rlist:
         percent_loss_data.append(tmp_percent_loss)
 
 
-    ltdr_data = [i['properties']['mean'] for i in ltdr]
+    # ltdr_data = [i['properties']['mean'] for i in ltdr]
 
 
     tmp_df = pd.DataFrame(tmp_data)
@@ -53,7 +53,7 @@ for rid in rlist:
 
     tmp_df['tc00_e'] = tmp_df['tc00_e'].astype(int)
     tmp_df['per_loss'] = percent_loss_data
-    tmp_df['lnyx_2000e'] = ltdr_data
+    # tmp_df['lnyx_2000e'] = ltdr_data
 
     #tmp_df['ad_extract'].fillna('NA', inplace=True)
     tmp_df.to_csv(base_dir + "/analysis_data/hansen_extracts/"+rid+"_extract.csv", sep=",", encoding="utf-8", index=False)

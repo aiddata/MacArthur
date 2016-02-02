@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 # https://earthenginepartners.appspot.com/science-2013-global-forest/download_v1.2.html
 # https://storage.googleapis.com/earthenginepartners-hansen/GFC2015/treecover2000.txt

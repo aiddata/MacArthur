@@ -30,7 +30,6 @@ South America (sa)
 - Peru
 - Venezuela
 
-
 1. Download global GADM files (http://biogeo.ucdavis.edu/data/gadm2.8/gadm28_levels.shp.zip)
 For each region:
 2. Using QGIS and the GADM global ADM2 shapefile, create a new shapefile which contains the ADM2 features for the relevant countries [eg: ./shps/sea/sea_adm2.shp]
@@ -40,7 +39,7 @@ For each region:
 6. Remove all fields except "ID" from clipped grid (install QGIS "Table Manager" plugin if not already installed then Vector>Table Manager>Table Manager) by selected all fields except "ID", click the "Delete" and then the "Save" button
 7. Convert "clipped" grid layer to points using the polygon centroid tool (Vector>Geometry Tools>Polygon centroids) by selecting the grid layer [eg: ./shps/sea/sea_points.shp]
 
-**Note: if you do not use the file structue/names from descriptions, other scripts may not work properly.**
+_Note: if you do not use the file structue/names from descriptions, other scripts may not work properly._
 
 
 ## ./hansen/
@@ -49,15 +48,15 @@ dependencies
 - linux packages: gdal/ogr
 - python packages: rasterstats, pandas
 
-1. download and mosaic hansen data
+1. download and mosaic hansen data  
 `bash ./hansen/get_hansen_for_bbox`
-2. run extracts
-`python ./hansen/run_hansen_extract.py`
+2. run extracts  
+   `python ./hansen/run_hansen_extract.py`
 
 
 ## ./analysis_data/
 
 1. run extract job(s) on sciclone
 2. run extract merge script
-`python ./analysis_data/merge_data.py
+   `python ./analysis_data/merge_data.py
 

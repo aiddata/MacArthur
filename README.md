@@ -58,6 +58,6 @@ dependencies
 ## ./analysis_data/
 
 1. run extract job(s) on sciclone
-2. run extract merge script
+2. run extract merge script  
 `python ./analysis_data/merge_data.py`
 

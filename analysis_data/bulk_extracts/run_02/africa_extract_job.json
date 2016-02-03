@@ -4,10 +4,10 @@
         "batch_name": "macarthur", 
         "job_name": "mac-africa", 
         "node_spec": "xeon", 
-        "max_node_count": 6, 
+        "max_node_count": 4, 
         "ppn_override": 0, 
         "walltime_override": true, 
-        "walltime": 10
+        "walltime": 20
     }, 
     "defaults": {
         "bnd_absolute": "/sciclone/aiddata10/REU/projects/macarthur/shps/africa_grid.shp", 

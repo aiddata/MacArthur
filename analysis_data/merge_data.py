@@ -39,17 +39,17 @@ def pandas_fields_monthly_to_yearly(df, field_tuples_list):
 
             # get month fields for year
             year_cols = [j for j in field_cols if j.startswith(i[0]+"_"+y)]
-            print year_cols
+            # print year_cols
 
             # min
-            # tmp_df[i[0]+"_"+str(y)+"m"] = tmp_df[year_cols].min(axis=1)
+            tmp_df[i[0]+"_"+str(y)+"m"] = tmp_df[year_cols].min(axis=1)
 
             # mean
             tmp_df[i[0]+"_"+str(y)+"e"] = tmp_df[year_cols].mean(axis=1)
             
-            print tmp_df[i[0]+"_"+str(y)+"e"]
+            # print tmp_df[i[0]+"_"+str(y)+"e"]
             # max
-            # tmp_df[i[0]+"_"+str(y)+"x"] = tmp_df[year_cols].max(axis=1)
+            tmp_df[i[0]+"_"+str(y)+"x"] = tmp_df[year_cols].max(axis=1)
             
             # drop month fields
             tmp_df.drop(year_cols, axis=1, inplace=True)
@@ -60,8 +60,10 @@ def pandas_fields_monthly_to_yearly(df, field_tuples_list):
 
 
 
-rlist = ["sea", "sa", "africa"]
-#rlist = ["sea"]
+# rlist = ["sea", "sa", "africa"]
+# rlist = ["sea"]
+rlist = ["sa"]
+#rlist = ["africa"]
 
 for rid in rlist:
     
@@ -72,9 +74,9 @@ for rid in rlist:
 
     hansen_extract_path = base_dir + "/analysis_data/hansen_extracts/" + rid + "_extract.csv"
 
-    bulk_extract_01_path = base_dir + "/analysis_data/bulk_extracts/run_01/" + [d for d in os.listdir(base_dir+"/analysis_data/bulk_extracts") if d.endswith(rid)][0] +"/merge_" + rid + "_grid.csv"
+    bulk_extract_01_path = base_dir + "/analysis_data/bulk_extracts/run_01//merge_" + rid + "_grid_edit.csv"
 
-    bulk_extract_02_path = base_dir + "/analysis_data/bulk_extracts/run_02/" + [d for d in os.listdir(base_dir+"/analysis_data/bulk_extracts") if d.endswith(rid)][0] +"/merge_" + rid + "_grid.csv"
+    bulk_extract_02_path = base_dir + "/analysis_data/bulk_extracts/run_02//merge_" + rid + "_grid.csv"
 
 
     grid_info = pd.read_csv(grid_info_path)
@@ -94,13 +96,16 @@ for rid in rlist:
     agg_bulk_extract_02 = pandas_fields_monthly_to_yearly(bulk_extract_02, [('at41','e'), ('pc41', 'e')])
     # agg_bulk_extract.to_csv(base_dir + "/analysis_data/merged/test_merge.csv", index=False, encoding="utf-8")
 
+
     # merge
     
     tmp_merge = grid_info.merge(hansen_extract, on="ID")
 
-    final_merge = tmp_merge.merge(agg_bulk_extract, on="ID")
+    bulk_merge = bulk_extract_01.merge(agg_bulk_extract_02, on="ID")
+    
+    final_merge = tmp_merge.merge(bulk_merge, on="ID")
 
     output_path = base_dir + "/analysis_data/merged/" + rid + "_merge.csv"
     final_merge.to_csv(output_path, index=False, encoding="utf-8")
  
-    sys.exit("!")
+

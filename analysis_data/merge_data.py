@@ -60,10 +60,10 @@ def pandas_fields_monthly_to_yearly(df, field_tuples_list):
 
 
 
-# rlist = ["sea", "sa", "africa"]
+rlist = ["sea", "sa", "africa"]
 # rlist = ["sea"]
-rlist = ["sa"]
-#rlist = ["africa"]
+# rlist = ["sa"]
+# rlist = ["africa"]
 
 for rid in rlist:
     

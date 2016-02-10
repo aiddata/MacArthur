@@ -154,7 +154,7 @@ As expected, we see a strong correlation - areas with higher levels of NDVI also
 Because LTDR and Hansen are not independent products (Hansen leverages the same input as LTDR in the product production), this analysis does not suggest that one product can be used to independently verify the other.  
 Rather, here we illustrate that backcasting forest cover using LTDR can serve as a proxy to produce a longer time series of information roughly analogous to the higher-resolution approach to detecting forest cover Hansen employs.
 \begin{figure}[H]
-\caption{Histogram of LTDR NDVI Values in (a) locations with >50\% forest cover in Hansen 2000, and (b) locations with <\Sexpr{forest_thresh}\% forest cover in Hansen 2000.}
+\caption{Histogram of LTDR NDVI Values in (a) locations with >\Sexpr{forest_thresh}\% forest cover in Hansen 2000, and (b) locations with <\Sexpr{forest_thresh}\% forest cover in Hansen 2000.}
 \label{NDVI_Hansen_hist}
 \centering
 <<LTDR_NDVI_hist, echo=FALSE, fig="TRUE", out.width="0.8\\linewidth">>=

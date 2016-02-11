@@ -82,7 +82,7 @@ for rid in rlist:
     grid_info = pd.read_csv(grid_info_path)
 
     hansen_extract = pd.read_csv(hansen_extract_path)
-    hansen_extract.drop('lnyx_2000e', axis=1, inplace=True)
+    # hansen_extract.drop('lnyx_2000e', axis=1, inplace=True)
 
     bulk_extract_01 = pd.read_csv(bulk_extract_01_path)
     # bulk_cols = bulk_extract_01.columns.values.tolist()

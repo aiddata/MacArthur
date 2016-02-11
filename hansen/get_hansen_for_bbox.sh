@@ -20,7 +20,7 @@ for rid in ${rlist[@]}; do
         exit 1
     fi
 
-    mkdir -p downloads/{treecover2000,loss}/${rid}_tiles
+    mkdir -p downloads/{treecover2000,loss,gain,lossyear}/${rid}_tiles
 
     echo $extent_grep
 
@@ -42,18 +42,31 @@ for rid in ${rlist[@]}; do
 
     for i in ${url_array[@]}; do
         echo $i
-	# wget tiles
+
+        # wget tiles
+
         wget -c -N -P downloads/treecover2000/${rid}_tiles ${i}
 
         j=`echo $i | sed s/'treecover2000'/'loss'/g`
         wget -c -N -P downloads/loss/${rid}_tiles ${j}
+
+        k=`echo $i | sed s/'treecover2000'/'gain'/g`
+        wget -c -N -P downloads/gain/${rid}_tiles ${k}
+
+        m=`echo $i | sed s/'treecover2000'/'lossyear'/g`
+        wget -c -N -P downloads/lossyear/${rid}_tiles ${m}
+
     done
 
-    mkdir -p data/{treecover2000,loss}
+    mkdir -p data/{treecover2000,loss,gain,lossyear}
+
 
     # mosaic tiles
-    #gdal_merge.py -of GTiff -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=YES downloads/treecover2000/${rid}_tiles/*.tif -o data/treecover2000/${rid}_mosaic.tif
+
+    gdal_merge.py -of GTiff -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=YES downloads/treecover2000/${rid}_tiles/*.tif -o data/treecover2000/${rid}_mosaic.tif
     gdal_merge.py -of GTiff -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=YES downloads/loss/${rid}_tiles/*.tif -o data/loss/${rid}_mosaic.tif
+    gdal_merge.py -of GTiff -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=YES downloads/gain/${rid}_tiles/*.tif -o data/gain/${rid}_mosaic.tif
+    gdal_merge.py -of GTiff -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=YES downloads/lossyear/${rid}_tiles/*.tif -o data/lossyear/${rid}_mosaic.tif
 
 
 done

@@ -8,3 +8,4 @@
 *.aux.xml
 *.zip
 *.csv
+.Rproj.user

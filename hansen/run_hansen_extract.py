@@ -139,5 +139,5 @@ for rid in rlist:
     # tmp_df['lnyx_2000e'] = ltdr_data
 
     #tmp_df['ad_extract'].fillna('NA', inplace=True)
-    tmp_df.to_csv(base_dir + "/analysis_data/hansen_extracts/"+rid+"_extract.csv", sep=",", encoding="utf-8", index=False)
+    tmp_df.to_csv(base_dir + "/sciclone_data/hansen_extracts/"+rid+"_extract.csv", sep=",", encoding="utf-8", index=False)
 

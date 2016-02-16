@@ -70,13 +70,13 @@ for rid in rlist:
     print rid
 
 
-    grid_info_path = base_dir + "/analysis_data/grid_info/" + rid + "_data.csv"
+    grid_info_path = base_dir + "/sciclone_data/grid_info/" + rid + "_data.csv"
 
-    hansen_extract_path = base_dir + "/analysis_data/hansen_extracts/" + rid + "_extract.csv"
+    hansen_extract_path = base_dir + "/sciclone_data/hansen_extracts/" + rid + "_extract.csv"
 
-    bulk_extract_01_path = base_dir + "/analysis_data/bulk_extracts/run_01//merge_" + rid + "_grid_edit.csv"
+    bulk_extract_01_path = base_dir + "/sciclone_data/bulk_extracts/run_01//merge_" + rid + "_grid_edit.csv"
 
-    bulk_extract_02_path = base_dir + "/analysis_data/bulk_extracts/run_02//merge_" + rid + "_grid.csv"
+    bulk_extract_02_path = base_dir + "/sciclone_data/bulk_extracts/run_02//merge_" + rid + "_grid.csv"
 
 
     grid_info = pd.read_csv(grid_info_path)
@@ -88,13 +88,13 @@ for rid in rlist:
     # bulk_cols = bulk_extract_01.columns.values.tolist()
     # cut_cols = [j for j in bulk_cols if j.startswith(('at41', 'pc41'))]
     # cut_bulk_extract = bulk_extract.drop(cut_cols, axis=1)
-    # cut_bulk_extract_path = base_dir + "/analysis_data/bulk_extracts/" + [d for d in os.listdir(base_dir+"/analysis_data/bulk_extracts") if d.endswith(rid)][0] +"/merge_" + rid + "_grid_edit.csv"
+    # cut_bulk_extract_path = base_dir + "/sciclone_data/bulk_extracts/" + [d for d in os.listdir(base_dir+"/sciclone_data/bulk_extracts") if d.endswith(rid)][0] +"/merge_" + rid + "_grid_edit.csv"
     # cut_bulk_extract.to_csv(cut_bulk_extract_path, index=False, encoding="utf-8")
 
     bulk_extract_02 = pd.read_csv(bulk_extract_02_path)
     # aggregate year-month fields to year
     agg_bulk_extract_02 = pandas_fields_monthly_to_yearly(bulk_extract_02, [('at41','e'), ('pc41', 'e')])
-    # agg_bulk_extract.to_csv(base_dir + "/analysis_data/merged/test_merge.csv", index=False, encoding="utf-8")
+    # agg_bulk_extract.to_csv(base_dir + "/sciclone_data/merged/test_merge.csv", index=False, encoding="utf-8")
 
 
     # merge
@@ -105,7 +105,7 @@ for rid in rlist:
     
     final_merge = tmp_merge.merge(bulk_merge, on="ID")
 
-    output_path = base_dir + "/analysis_data/merged/" + rid + "_merge.csv"
+    output_path = base_dir + "/sciclone_data/merged/" + rid + "_merge.csv"
     final_merge.to_csv(output_path, index=False, encoding="utf-8")
  
 

@@ -1,0 +1,53 @@
+{
+    "config": {
+        "user_prefix": "asg", 
+        "batch_name": "macarthur", 
+        "job_name": "mac-sea", 
+        "node_spec": "xeon", 
+        "max_node_count": 4, 
+        "ppn_override": 0, 
+        "walltime_override": true, 
+        "walltime": 180
+    }, 
+    "defaults": {
+        "bnd_absolute": "/sciclone/aiddata10/REU/projects/macarthur/shps/sea_grid.shp", 
+        "bnd_name": "sea_grid", 
+        "extract_type": "mean", 
+        "extract_method": "python", 
+        "output_base": "/sciclone/aiddata10/REU/projects/macarthur/sea_extracts", 
+        "years": "1980:2015",
+        "run_hours": 1
+    }, 
+    "data": [
+        {
+            "name": "dist_to_all_rivers"
+        },
+        {
+            "name": "dist_to_roads"
+        },
+        {
+            "name": "srtm_elevation"
+        },
+        {
+            "name": "srtm_slope"
+        },
+        {
+            "name": "accessibility_map"
+        },
+        {
+            "name": "gpw_v3"
+        },
+        {
+            "name": "ltdr_yearly_ndvi_max"
+        },
+        {
+            "name": "v4composites_calibrated"
+        },
+        {
+            "name": "terrestrial_air_temperature_v4.01"
+        },
+        {
+            "name": "terrestrial_precipitation_v4.01"
+        }
+    ]
+}

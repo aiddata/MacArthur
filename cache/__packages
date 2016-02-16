@@ -1,0 +1,8 @@
+base
+knitr
+sp
+jsonlite
+xtable
+stargazer
+bitops
+RCurl

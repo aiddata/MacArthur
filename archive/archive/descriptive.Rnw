@@ -1,0 +1,186 @@
+
+%sudo apt-get install texlive-bibtex-extra
+\documentclass{article}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage[backend=bibtex, style=nature, citestyle=authoryear]{biblatex}
+\usepackage[table]{xcolor}
+\bibliography{WBVFM_IntroPar}
+\newenvironment{knitrout}{}{}  %just a dummy environment
+\makeatletter
+\newcommand\gobblepars{%
+    \@ifnextchar\par%
+        {\expandafter\gobblepars\@gobble}%
+        {}}
+\makeatother
+\title{Descriptives: SEA and MacArthur}
+\begin{document}
+\begin{knitrout}
+
+\maketitle
+\tableofcontents
+
+<<setup, echo=FALSE>>=
+Sys.setenv(TEXTINPUTS=getwd(),
+           BIBINPUTS=getwd(),
+           BSTINPUTS=getwd())
+render_sweave()
+mDir= "/home/aid_data/Desktop/GitRepo/MacArthur/"
+@
+
+<<Libs, include=FALSE, cache=FALSE>>=
+library(sp)
+library(jsonlite)
+library(xtable)
+library(stargazer)
+@
+
+<<DataLoad, include=FALSE, cache=TRUE>>=
+#Load in data
+csv <- paste(mDir, "analysis_data/merged/sea_merge.csv", sep="")
+json <- paste(mDir, "analysis_data/merged/sea_merge.json", sep="")
+dta <- read.csv(csv)
+vars <- fromJSON(txt=json)
+@
+
+<<DataPermutations, include=FALSE>>=
+dta2 <- dta[dta$NAME_0 == "Cambodia",]
+forest_thresh = 10
+@
+
+\newpage
+\section{Data}
+<<Variable_table, results='asis', echo=FALSE, cache=FALSE>>=
+varMatrix <- matrix(data=NA, nrow=length(names(vars)), ncol=2)
+for (i in 1:length(names(vars)))
+{
+  cur_var <- names(vars)[i]
+  
+  short_name <-eval(parse(text= paste("vars$",cur_var,"$data_mini", sep="")))
+  varMatrix[i,] <- c(short_name, cur_var)
+}
+
+var_caption <- paste0("Variables used in this analysis.")
+
+colnames(varMatrix) <- c("Short Name", "Long Name")
+
+print(xtable(varMatrix, caption=var_caption, label="Variable_Table"), 
+      size="footnotesize",
+      include.rownames=FALSE,
+      include.colnames=TRUE,
+      capiton.placement="bottom"
+      )
+@
+Variable names are defined in Table \ref{Variable_Table}.  
+
+\newpage
+
+\section{Descriptives}
+
+%Cell-level statistics
+<<Cell_Stats, results='asis', echo=FALSE>>=
+#selecting just variables of interest
+dta3 <- dta2[23:297]
+#Select only the mean temperature and precip, for now.
+colnames(dta3)[2] <- "per_loss_e"
+dta3 <- dta3[,grep('e$',names(dta3), invert=FALSE)]
+
+#Process dataframe to summarize temporal variables into single summaries
+collapse_temporal <- function(x, prefix)
+{
+  eval(parse(text=paste("t_dta <- x[,grep('^",prefix,"',names(x), invert=TRUE)]",sep="")))
+  eval(parse(text=paste("stat_dta <- x[,grep('^",prefix,"',names(x), invert=FALSE)]",sep="")))
+  eval(parse(text=paste("t_dta$",prefix,"_mean <- rowMeans(stat_dta)", sep="")))
+  return(t_dta)
+}
+stargaze_dta <- collapse_temporal(dta3, "lnyx")
+stargaze_dta <- collapse_temporal(stargaze_dta, "ncc4")
+stargaze_dta <- collapse_temporal(stargaze_dta, "at41")
+stargaze_dta <- collapse_temporal(stargaze_dta, "pc41")
+ttl = paste("Cell level descriptive statistics (N=",length(dta2[[1]]),")",sep="")
+stargazer(stargaze_dta, title=ttl, notes="Variables with 'mean' appendix are summaries of the yearly mean values.")
+@
+
+%ADM2-level statistics
+<<ADM_Stats, results='asis', echo=FALSE>>=
+#selecting just variables of interest
+dta3 <- dta2[c(6,23:297)]
+colnames(dta3)[1] <- "OBJECTIDe"
+colnames(dta3)[3] <- "per_loss_e"
+dta3 <- dta3[,grep('e$',names(dta3), invert=FALSE)]
+
+dta3_adm <- aggregate(dta3, by=list(dta3$OBJECTID), FUN=mean, na.rm=TRUE)
+
+#Process dataframe to summarize temporal variables into single summaries
+collapse_temporal <- function(x, prefix)
+{
+  eval(parse(text=paste("t_dta <- x[,grep('^",prefix,"',names(x), invert=TRUE)]",sep="")))
+  eval(parse(text=paste("stat_dta <- x[,grep('^",prefix,"',names(x), invert=FALSE)]",sep="")))
+  eval(parse(text=paste("t_dta$",prefix,"_mean <- rowMeans(stat_dta)", sep="")))
+  return(t_dta)
+}
+stargaze_dta <- collapse_temporal(dta3_adm, "lnyx")
+stargaze_dta <- collapse_temporal(stargaze_dta, "ncc4")
+stargaze_dta <- collapse_temporal(stargaze_dta, "at41")
+stargaze_dta <- collapse_temporal(stargaze_dta, "pc41")
+stargaze_dta2 <- stargaze_dta[-c(1,2)]
+ttl = paste("ADM2 level descriptive statistics (N=",length(unique(dta2$OBJECTID)),")",sep="")
+stargazer(stargaze_dta2, title=ttl, notes=c("Variables with 'mean' appendix are summaries of the yearly mean values.", "All variables represent the mean cell value within a ADM 2."))
+@
+
+\section{Forest Thresholds}
+Because the Hansen dataset begins in the year 2000, it is not possible to conduct long-term analyses using this dataset alone.  
+To mitigate this, we select to leverage the longer-term record (1982 to present) offered by the NASA Long Term Data Record (LTDR).
+However, the LTDR has both a coarser resolution (5km, as opposed to 30 meters) as well as a different unit of measurement (Normalized Difference Vegetation Index) than the Hansen product.
+To take advantage of the information in Hansen, as well as the long term record provided by the LTDR, we fuse the two data products together using the single year of forest cover data provided by Hansen (2000).
+\par
+The fusion process aggregates the Hansen 2000 30 meter cells to calculate a mean \% of forest cover estimated by Hansen within each 5km LTDR cell.  
+We then contrast the mean annual values of NDVI present in LTDR to the forest cover values in Hansen, selecting only LTDR cells which have at least \Sexpr{forest_thresh}\% forest cover according to the Hansen dataset. 
+\begin{figure}[H]
+\caption{Relationship between LTDR 2000 NDVI and Hansen \% Forest Cover 2000, of LTDR cells with at least \Sexpr{forest_thresh}\% forest cover according to Hansen 2000.}
+\label{LTDR_Hansen}
+\centering
+<<LTDR_NDVI, echo=FALSE, fig="TRUE", out.width="0.8\\linewidth">>=
+ndviDTA <- dta2[c("tc00_e", "lnyx_2000e")]
+ndviDTA_for <- ndviDTA[ndviDTA$tc00_e >= forest_thresh,]
+plot(ndviDTA_for)
+@
+\end{figure}
+The distribution of NDVI values for the remaining LTDR cells can be seen in figure \ref{LTDR_Hansen}.  
+As expected, we see a strong correlation - areas with higher levels of NDVI also tend to have higher levels of forest cover as estimated by Hansen.  
+Because LTDR and Hansen are not independent products (Hansen leverages the same input as LTDR in the product production), this analysis does not suggest that one product can be used to independently verify the other.  
+Rather, here we illustrate that backcasting forest cover using LTDR can serve as a proxy to produce a longer time series of information roughly analogous to the higher-resolution approach to detecting forest cover Hansen employs.
+\begin{figure}[H]
+\caption{Histogram of LTDR NDVI Values in (a) locations with >\Sexpr{forest_thresh}\% forest cover in Hansen 2000, and (b) locations with <\Sexpr{forest_thresh}\% forest cover in Hansen 2000.}
+\label{NDVI_Hansen_hist}
+\centering
+<<LTDR_NDVI_hist, echo=FALSE, fig="TRUE", out.width="0.8\\linewidth">>=
+par(mfrow=c(2,1))
+ndviDTA_for <- ndviDTA[ndviDTA$tc00_e >= forest_thresh,]
+ttl = paste("Histogram of NDVI values in LTDR 5km w/ >",forest_thresh,"% Forest Cover", sep="")
+hist(ndviDTA_for$lnyx_2000e, main=ttl, col="green", xlim=c(0,10000))
+ndviDTA_notfor <- ndviDTA[ndviDTA$tc00_e <= forest_thresh,]
+ttl2 = paste("Histogram of NDVI values in LTDR 5km w/ <",forest_thresh,"% Forest Cover", sep="")
+hist(ndviDTA_notfor$lnyx_2000e, main=ttl2, col="red", xlim=c(0,10000))
+@
+\end{figure}
+\par
+Using this information, for any historic or future LTDR (5km) unit of observation, the probability each unit is forest or non-forest is calculated based on a maximum likelihood decision rule.
+The probability of each unit containing a forest is calculated, and all units which have a higher probability of inclusion into the "forest" class than "non-forest" class are used in later steps of the analysis.
+The estimated probability density function to estimate inclusion into the forested class is calculated using the following equation:
+\begin{equation}
+\rho (x | c_{i}) = \frac{1}{(2\pi)^{1/2}*\sigma_{i}} * exp(-\frac{1}{2}*\frac{(x-\mu_{i})^{2}}{\sigma_{i}^{2}})
+\end{equation}
+where \textit{x} is the LTDR value of the unit being classified as forest or non-forest (represented as classes \textit{c}), \begin{math}\mu_{i}\end{math} is the estimated mean of all LTDR values determined to be included in class \textit{i} and \begin{math}\sigma_{i}^{2}\end{math} is the estimated variance of each class, i.e. \begin{math}x \in forest (c_{1}) \end{math}when:
+\begin{equation}
+\rho (x | c_{1}) * \rho(c_{1}) \geq \rho (x | c_{0}) * \rho(c_{0})
+\end{equation}
+where prior probabilities \begin{math} \rho(c_{i})\end{math} are established based on the probability of a LTDR pixel being classified as forest or non-forest in the year 2000 (i.e., the percent of the landscape occupied by each class).
+\par
+
+
+\end{knitrout}
+\end{document}

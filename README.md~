@@ -2,9 +2,6 @@
 
 --------------------------------------------------
 
-## ./analysis_data/
-Contains the input data for the analyses.  Script "analysis.Rnw" will automatically download the relevant files into this directory.
-
 ## ./shps/
 
 Project contains 3 regions:

@@ -8,10 +8,4 @@
 *.aux.xml
 *.zip
 *.csv
-*.aux
-*.xml
-*.sty
-*.bib
-*.toc
-*.tex
 .Rproj.user

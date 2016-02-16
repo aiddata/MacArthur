@@ -1,11 +1,11 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2016.1.21)  16 FEB 2016 11:04
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2016.2.16)  16 FEB 2016 11:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
 **analysis.tex
 (./analysis.tex
 LaTeX2e <2011/06/27>
-Babel <3.9h> and hyphenation patterns for 4 languages loaded.
+Babel <3.9h> and hyphenation patterns for 2 languages loaded.
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
@@ -601,7 +601,7 @@ File: english.lbx 2013/11/25 v2.8a biblatex localization (PK/JW/AB)
 
 Package biblatex Warning: Conflicting options.
 (biblatex)                'firstinits' conflicts with 'uniquename=full'.
-(biblatex)                Setting 'uniquename=init' on input line 36.
+(biblatex)                Setting 'uniquename=init' on input line 40.
 
 (./analysis.aux
 
@@ -610,26 +610,26 @@ LaTeX Warning: Label `' multiply defined.
 )
 \openout1 = `analysis.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 36.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 36.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 40.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 40.
  (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 36.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 36.
-LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -661,7 +661,7 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 \AtBeginShipoutBox=\box35
-Package hyperref Info: Link coloring OFF on input line 36.
+Package hyperref Info: Link coloring OFF on input line 40.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -671,9 +671,9 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count280
 )
-LaTeX Info: Redefining \ref on input line 36.
-LaTeX Info: Redefining \pageref on input line 36.
-LaTeX Info: Redefining \nameref on input line 36.
+LaTeX Info: Redefining \ref on input line 40.
+LaTeX Info: Redefining \pageref on input line 40.
+LaTeX Info: Redefining \nameref on input line 40.
 
 (./analysis.out) (./analysis.out)
 \@outlinefile=\write5
@@ -689,14 +689,14 @@ Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'analysis.bbl' not found.
 
 No file analysis.bbl.
-Package biblatex Info: Reference section=0 on input line 36.
-Package biblatex Info: Reference segment=0 on input line 36.
+Package biblatex Info: Reference section=0 on input line 40.
+Package biblatex Info: Reference segment=0 on input line 40.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 40.
+(Font)              <12> on input line 45.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 40.
+(Font)              <8> on input line 45.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 40.
+(Font)              <6> on input line 45.
 
 LaTeX Warning: No \author given.
 
@@ -708,18 +708,18 @@ LaTeX Warning: No \author given.
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 59.
+(Font)              <5> on input line 64.
 
 [2]
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 99.
+(Font)              <7> on input line 104.
 
-Overfull \hbox (14.63889pt too wide) in paragraph at lines 99--121
+Overfull \hbox (14.63889pt too wide) in paragraph at lines 104--126
  [][] 
  []
 
 
-Overfull \hbox (6.86899pt too wide) in paragraph at lines 131--154
+Overfull \hbox (6.86899pt too wide) in paragraph at lines 136--159
  [][] 
  []
 
@@ -727,22 +727,22 @@ Overfull \hbox (6.86899pt too wide) in paragraph at lines 131--154
 File: figure/LTDR_NDVI-1.pdf Graphic file (type pdf)
 
 <use figure/LTDR_NDVI-1.pdf>
-Package pdftex.def Info: figure/LTDR_NDVI-1.pdf used on input line 171.
+Package pdftex.def Info: figure/LTDR_NDVI-1.pdf used on input line 176.
 (pdftex.def)             Requested size: 276.00105pt x 276.00177pt.
 
 <figure/LTDR_NDVI_hist-1.pdf, id=45, 505.89pt x 505.89pt>
 File: figure/LTDR_NDVI_hist-1.pdf Graphic file (type pdf)
 
 <use figure/LTDR_NDVI_hist-1.pdf>
-Package pdftex.def Info: figure/LTDR_NDVI_hist-1.pdf used on input line 183.
+Package pdftex.def Info: figure/LTDR_NDVI_hist-1.pdf used on input line 188.
 (pdftex.def)             Requested size: 276.00105pt x 276.00177pt.
  [4 <./figure/LTDR_NDVI-1.pdf>] [5 <./figure/LTDR_NDVI_hist-1.pdf>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 201.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 206.
  [6]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 201.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 206.
  (./analysis.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 201.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 201.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 206.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 206.
 Package rerunfilecheck Info: File `analysis.out' has not changed.
 (rerunfilecheck)             Checksum: F18D038E1BC4C98838A6557083D12724;138.
 
@@ -752,15 +752,15 @@ LaTeX Warning: There were multiply-defined labels.
 Package logreq Info: Writing requests to 'analysis.run.xml'.
 \openout1 = `analysis.run.xml'.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 201.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 206.
  ) 
 Here is how much of TeX's memory you used:
- 11841 strings out of 494985
- 184502 string characters out of 6180356
- 382594 words of memory out of 5000000
- 14862 multiletter control sequences out of 15000+600000
+ 11841 strings out of 495028
+ 184502 string characters out of 6181497
+ 382444 words of memory out of 5000000
+ 14855 multiletter control sequences out of 15000+600000
  27227 words of font info for 56 fonts, out of 8000000 for 9000
- 36 hyphenation exceptions out of 8191
+ 14 hyphenation exceptions out of 8191
  41i,9n,35p,940b,660s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
@@ -773,7 +773,7 @@ ublic/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/c
 m/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti
 10.pfb>
-Output written on analysis.pdf (6 pages, 386781 bytes).
+Output written on analysis.pdf (6 pages, 386777 bytes).
 PDF statistics:
  119 PDF objects out of 1000 (max. 8388607)
  95 compressed objects within 1 object stream

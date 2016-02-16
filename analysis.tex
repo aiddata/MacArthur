@@ -1,4 +1,8 @@
 
+%tools>global options>sweave>weave rnw files using: knitr
+
+%sudo apt-get install texlive
+%sudo apt-get install texlive-latex-extra 
 %sudo apt-get install texlive-bibtex-extra
 \documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
 %% maxwidth is the original width if it is less than linewidth
@@ -34,6 +38,7 @@
 \title{Descriptives: SEA and MacArthur}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
+%\SweaveOpts{concordance=TRUE}
 \begin{knitrout}
 
 \maketitle
@@ -51,8 +56,8 @@
 
 \newpage
 \section{Data}
-% latex table generated in R 3.2.3 by xtable 1.8-2 package
-% Tue Feb 16 11:04:46 2016
+% latex table generated in R 3.2.2 by xtable 1.8-2 package
+% Tue Feb 16 11:39:13 2016
 \begin{table}[ht]
 \centering
 \begingroup\footnotesize
@@ -92,7 +97,7 @@ Variable names are defined in Table \ref{Variable_Table}.
 %Cell-level statistics
 
 % Table created by stargazer v.5.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: Tue, Feb 16, 2016 - 11:04:46 AM
+% Date and time: Tue, Feb 16, 2016 - 11:39:13 AM
 \begin{table}[!htbp] \centering 
   \caption{Cell level descriptive statistics (N=6188)} 
   \label{} 
@@ -124,7 +129,7 @@ pc41\_mean & 6,188 & 129.491 & 31.102 & 106.203 & 285.172 \\
 %ADM2-level statistics
 
 % Table created by stargazer v.5.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: Tue, Feb 16, 2016 - 11:04:47 AM
+% Date and time: Tue, Feb 16, 2016 - 11:39:13 AM
 \begin{table}[!htbp] \centering 
   \caption{ADM2 level descriptive statistics (N=176)} 
   \label{} 

@@ -1,4 +1,8 @@
 
+%tools>global options>sweave>weave rnw files using: knitr
+
+%sudo apt-get install texlive
+%sudo apt-get install texlive-latex-extra 
 %sudo apt-get install texlive-bibtex-extra
 \documentclass{article}
 \usepackage{float}
@@ -18,6 +22,7 @@
 \makeatother
 \title{Descriptives: SEA and MacArthur}
 \begin{document}
+%\SweaveOpts{concordance=TRUE}
 \begin{knitrout}
 
 \maketitle

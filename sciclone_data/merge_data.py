@@ -1,7 +1,7 @@
 
 import sys
 import os
-
+import time
 import pandas as pd
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -107,5 +107,47 @@ for rid in rlist:
 
     output_path = base_dir + "/sciclone_data/merged/" + rid + "_merge.csv"
     final_merge.to_csv(output_path, index=False, encoding="utf-8")
- 
+
+
+
+
+# # UNTESTED
+
+# # upload to ftp
+# ftp_server = "ftp.aiddata.wm.edu"
+# ftp_path = ftp_server + "/REU/MacArthur/analysis_data/" + str(int(time.time()))
+
+
+# import ftplib
+
+# ftp = ftplib.FTP(ftp_server,'reu','reudata')
+
+
+# # https://stackoverflow.com/questions/10644608/create-missing-directories-in-ftplib-storbinary
+
+# # Change directories - create if it doesn't exist
+# def chdir(dir): 
+#     if directory_exists(dir) is False: # (or negate, whatever you prefer for readability)
+#         ftp.mkd(dir)
+#     ftp.cwd(dir)
+
+# # Check if directory exists (in current location)
+# def directory_exists(dir):
+#     filelist = []
+#     ftp.retrlines('LIST',filelist.append)
+#     for f in filelist:
+#         if f.split()[-1] == dir and f.upper().startswith('D'):
+#             return True
+#     return False
+
+
+# chdir(ftp_path)
+
+# # upload files
+# file = open('filename.ext','rb')                  # file to send
+# ftp.storbinary('STOR filename.ext', file)     # send the file
+# file.close()                                    # close file and FTP
+# ftp.quit()
+
+
 

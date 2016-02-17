@@ -33,7 +33,8 @@ Sys.setenv(TEXTINPUTS=getwd(),
            BIBINPUTS=getwd(),
            BSTINPUTS=getwd())
 render_sweave()
-mDir= getwd()
+mDir = getwd()
+
 @
 
 <<Libs, include=FALSE, cache=FALSE>>=
@@ -48,35 +49,51 @@ library(RCurl)
 #Set Working Directory to the location of this script
 
 
-#Load in data
-ftp_url <- "ftp://reu:reudata@ftp.aiddata.wm.edu/REU/MacArthur/"
-filenames = getURL(ftp_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
-files <- strsplit(filenames, "\r*\n")[[1]]
+# find latest data
+ftp_url <- "ftp://reu:reudata@ftp.aiddata.wm.edu/REU/MacArthur/analysis_data/"
+dir_names = getURL(ftp_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+dirs_char <- strsplit(dir_names, "\r*\n")[[1]]
+
+dirs_int <- as.numeric(dirs_char)
+dirs_order <- as.character(dirs_int[order(-dirs_int)])
+
+dir_active = dirs_order[1]
+
+active_dir_path = paste(mDir, "/analysis_data/", dir_active, sep='')
+
+# make new dir
+dir.create(active_dir_path, showWarnings = FALSE)
+
+# get files
+active_url <- paste(ftp_url, dir_active, '/', sep='')
+file_str = getURL(active_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+file_names <- strsplit(file_str, "\r*\n")[[1]]
 
 
-for(i in 1:length(files))
-{
-  cur_file <- paste(mDir, "/analysis_data/", files[[i]], sep="")
-  #Download the newest revision of the file if we don't have it already.
-  if(!file.exists(cur_file))
-  {
-
-    dl_url <- paste(ftp_url,"/",files[[i]], sep="")
-    print(dl_url)
+# download
+for (i in 1:length(file_names)) {
     print(i)
-    download.file(dl_url, destfile=cur_file, method="libcurl")
-    #copy the file without the revision history tags for use in the script.
-    name <- paste(strsplit(files[i], "_")[[1]][1],".",strsplit(strsplit(files[i], "_")[[1]][2], "[.]")[[1]][2], sep="")
-    new_name <- paste(mDir, "/analysis_data/", name, sep="")
-    file.copy(cur_file, new_name, overwrite=TRUE)
-  }
+
+
+    src_file <- paste(active_url, file_names[[i]], sep="")
+    print(src_file)
+    
+    dst_file <- paste(active_dir_path, '/', file_names[[i]], sep="")
+
+    if (!file.exists(dst_file)) {
+        download.file(src_file, destfile=dst_file, method="libcurl")
+    }
+#     #copy the file without the revision history tags for use in the script.
+#     name <- paste(strsplit(files[i], "_")[[1]][1],".",strsplit(strsplit(files[i], "_")[[1]][2], "[.]")[[1]][2], sep="")
+#     new_name <- paste(mDir, "/analysis_data/", name, sep="")
+#     file.copy(cur_file, new_name, overwrite=TRUE)
 }
 
 @
 
 <<DataDataFrameLoad, include=FALSE, cache=TRUE>>=
-csv <- paste(mDir, "/analysis_data/sea.csv", sep="")
-json <- paste(mDir, "/analysis_data/sea.json", sep="")
+csv <- paste(active_dir_path, "/sea.csv", sep="")
+json <- paste(active_dir_path, "/sea.json", sep="")
 dta <- read.csv(csv)
 vars <- fromJSON(txt=json)
 @

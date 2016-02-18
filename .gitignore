@@ -16,4 +16,5 @@
 *.tex
 *.log
 *.gz
+analysis_data
 .Rproj.user

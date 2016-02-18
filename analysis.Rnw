@@ -33,74 +33,48 @@ Sys.setenv(TEXTINPUTS=getwd(),
            BIBINPUTS=getwd(),
            BSTINPUTS=getwd())
 render_sweave()
-mDir = getwd()
 
+forest_thresh = 10
 @
 
 <<Libs, include=FALSE, cache=FALSE>>=
-library(sp)
-library(jsonlite)
-library(xtable)
-library(stargazer)
-library(RCurl)
+source("RLibs.R")
 @
 
 <<DataDownLoad, include=FALSE, cache=FALSE>>=
-#Set Working Directory to the location of this script
-
-
-# find latest data
-ftp_url <- "ftp://reu:reudata@ftp.aiddata.wm.edu/REU/MacArthur/analysis_data/"
-dir_names = getURL(ftp_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
-dirs_char <- strsplit(dir_names, "\r*\n")[[1]]
-
-dirs_int <- as.numeric(dirs_char)
-dirs_order <- as.character(dirs_int[order(-dirs_int)])
-
-dir_active = dirs_order[1]
-
-active_dir_path = paste(mDir, "/analysis_data/", dir_active, sep='')
-
-# make new dir
-dir.create(active_dir_path, showWarnings = FALSE)
-
-# get files
-active_url <- paste(ftp_url, dir_active, '/', sep='')
-file_str = getURL(active_url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
-file_names <- strsplit(file_str, "\r*\n")[[1]]
-
-
-# download
-for (i in 1:length(file_names)) {
-    print(i)
-
-
-    src_file <- paste(active_url, file_names[[i]], sep="")
-    print(src_file)
-    
-    dst_file <- paste(active_dir_path, '/', file_names[[i]], sep="")
-
-    if (!file.exists(dst_file)) {
-        download.file(src_file, destfile=dst_file, method="libcurl")
-    }
-#     #copy the file without the revision history tags for use in the script.
-#     name <- paste(strsplit(files[i], "_")[[1]][1],".",strsplit(strsplit(files[i], "_")[[1]][2], "[.]")[[1]][2], sep="")
-#     new_name <- paste(mDir, "/analysis_data/", name, sep="")
-#     file.copy(cur_file, new_name, overwrite=TRUE)
-}
-
+source("RDownload.R")
+mDir = getwd()
+active_dir_path  <- downlad_data(mDir)
 @
 
-<<DataDataFrameLoad, include=FALSE, cache=TRUE>>=
-csv <- paste(active_dir_path, "/sea.csv", sep="")
-json <- paste(active_dir_path, "/sea.json", sep="")
+<<DataDataFramesLoad, include=FALSE, cache=TRUE>>=
+csv <- paste(active_dir_path, "/extracts/sea.csv", sep="")
+json <- paste(active_dir_path, "/extracts/sea.json", sep="")
 dta <- read.csv(csv)
 vars <- fromJSON(txt=json)
-@
 
-<<DataPermutations, include=FALSE>>=
+#Cells (Unit of Obs)
 dta2 <- dta[dta$NAME_0 == "Cambodia",]
-forest_thresh = 10
+
+#Spatial Cell Data
+spdf_cells <- paste(active_dir_path, "/grids/sea_grid.shp", sep="")
+cells <- readShapePoly(spdf_cells)
+#Keep only relevant cells
+AOI_cells <- sp::merge(cells, dta2, by="ID", all.x=FALSE)
+
+#SpatialADM data
+spdf_adm_path <- paste(active_dir_path, "/ADM2/GADM_MacEcohotspotSubset_ADM2.shp", sep="")
+spdf_adm <- readShapePoly(spdf_adm_path)
+#Keep only relevant ADM data
+spdf_adm <- spdf_adm[spdf_adm@data$NAME_0 == "Cambodia",]
+
+location_csv <- paste(active_dir_path, "/MacArthur_Geocoded_data/locations.csv", sep="")
+locations <- read.csv(location_csv)
+locations2 <- locations[grep("Cambodia", locations$gazetteer_adm_name),]
+coords = cbind(locations2$longitude, locations2$latitude)
+
+#Aid
+Mac_spdf <- SpatialPointsDataFrame(coords, locations2)
 @
 
 \newpage
@@ -182,15 +156,16 @@ stargaze_dta2 <- stargaze_dta[-c(1,2)]
 ttl = paste("ADM2 level descriptive statistics (N=",length(unique(dta2$OBJECTID)),")",sep="")
 stargazer(stargaze_dta2, title=ttl, notes=c("Variables with 'mean' appendix are summaries of the yearly mean values.", "All variables represent the mean cell value within a ADM 2."))
 @
+\begin{figure}[H]
+\caption{Study area (ADM2) overlayed with Chinese development finance project locations.}
+\label{LTDR_Hansen}
+\centering
+<<StudyAreaMap, echo=FALSE, fig="TRUE", out.width="0.8\\linewidth">>=
+plot(spdf_adm)
+points(Mac_spdf, col="red")
+@
+\end{figure}
 
-\section{Forest Thresholds}
-Because the Hansen dataset begins in the year 2000, it is not possible to conduct long-term analyses using this dataset alone.  
-To mitigate this, we select to leverage the longer-term record (1982 to present) offered by the NASA Long Term Data Record (LTDR).
-However, the LTDR has both a coarser resolution (5km, as opposed to 30 meters) as well as a different unit of measurement (Normalized Difference Vegetation Index) than the Hansen product.
-To take advantage of the information in Hansen, as well as the long term record provided by the LTDR, we fuse the two data products together using the single year of forest cover data provided by Hansen (2000).
-\par
-The fusion process aggregates the Hansen 2000 30 meter cells to calculate a mean \% of forest cover estimated by Hansen within each 5km LTDR cell.  
-We then contrast the mean annual values of NDVI present in LTDR to the forest cover values in Hansen, selecting only LTDR cells which have at least \Sexpr{forest_thresh}\% forest cover according to the Hansen dataset. 
 \begin{figure}[H]
 \caption{Relationship between LTDR 2000 NDVI and Hansen \% Forest Cover 2000, of LTDR cells with at least \Sexpr{forest_thresh}\% forest cover according to Hansen 2000.}
 \label{LTDR_Hansen}
@@ -204,7 +179,7 @@ plot(ndviDTA_for)
 The distribution of NDVI values for the remaining LTDR cells can be seen in figure \ref{LTDR_Hansen}.  
 As expected, we see a strong correlation - areas with higher levels of NDVI also tend to have higher levels of forest cover as estimated by Hansen.  
 Because LTDR and Hansen are not independent products (Hansen leverages the same input as LTDR in the product production), this analysis does not suggest that one product can be used to independently verify the other.  
-Rather, here we illustrate that backcasting forest cover using LTDR can serve as a proxy to produce a longer time series of information roughly analogous to the higher-resolution approach to detecting forest cover Hansen employs.
+Rather, here we illustrate that historic LTDR trends can be relevant for establishing baselines when Hansen outcome variables are considered.
 \begin{figure}[H]
 \caption{Histogram of LTDR NDVI Values in (a) locations with >\Sexpr{forest_thresh}\% forest cover in Hansen 2000, and (b) locations with <\Sexpr{forest_thresh}\% forest cover in Hansen 2000.}
 \label{NDVI_Hansen_hist}
@@ -219,19 +194,42 @@ ttl2 = paste("Histogram of NDVI values in LTDR 5km w/ <",forest_thresh,"% Forest
 hist(ndviDTA_notfor$lnyx_2000e, main=ttl2, col="red", xlim=c(0,10000))
 @
 \end{figure}
+\section{Methods}
+
+From each cell defined as forest (cells with > \Sexpr{forest_thresh}\% forest cover according to Hansen 2000), the euclidean distance (Haversine) to each chinese investment site (N = \Sexpr{length(locations2[[1]])}) is calculated and recorded.  
+<<Distance_Calc, echo=FALSE, cache=FALSE>>=
+source("RDist.R")
+dMatrix <- RDist(AOI_cells, Mac_spdf)
+#In dMatrix, every column is a cell (referenced in order to AOI_cells)
+#Every row is a MacArthur project (referenced in order to Mac_spdf)
+
+#Average distance in KM:
+avgDistKm <- mean(dMatrix) / 1000
+
+#Minimum
+col_mins <- do.call(pmin, lapply(1:nrow(dMatrix), function(i)dMatrix[i,]))
+minDistKm <- mean(col_mins) / 1000
+
+@
+On average, the minimum distance between a unit of observation (the cell) and each chinese investment site is \Sexpr{round(minDistKm,0)}km, with an average distance of \Sexpr{round(avgDistKm,0)}km.
 \par
-Using this information, for any historic or future LTDR (5km) unit of observation, the probability each unit is forest or non-forest is calculated based on a maximum likelihood decision rule.
-The probability of each unit containing a forest is calculated, and all units which have a higher probability of inclusion into the "forest" class than "non-forest" class are used in later steps of the analysis.
-The estimated probability density function to estimate inclusion into the forested class is calculated using the following equation:
+DRAFT
+To establish the degree of impact Chinese investment had on each grid cell, a weighted distance-decay function is approximated.  
+The spatial autocorrelation of forest tree cover is approximated using the 1999 LTDR dataset to avoid any potential confounds with treatments that start circa 2000.
+By examining the spatial autocorrelation of forest tree cover, we hope to establish the maximum distance at which spillover effects might feasibly be observed (as the spatial pattern of tree cover in 1999 is the produce of all preceeding impacts).
+Spatial autocorrelation is examined over 50 kilometer steps - for example, all cells within 50km are contrasted to one another, and the correlation of forest cover is recorded.  
+This is then repeated in bands, i.e., 50-100km; 100-150km and so forth until the 1000km limit is reached. 
+At each distance band, a summary measure of spatial autocorrelation - Morans I - is calculated, following (equation placeholder):
+
+A best-fit gaussian spatial decay function is then found to approximate the distance decay observed in the Morans I measurements (see equation placeholder and figure placeholder).
+Based on this distance-decay function, the estimated impact of chinese projects is weighted based on the cumulative distance-weighted average across all chinese projects.
+
+
+Functional Form of Analysis:
 \begin{equation}
-\rho (x | c_{i}) = \frac{1}{(2\pi)^{1/2}*\sigma_{i}} * exp(-\frac{1}{2}*\frac{(x-\mu_{i})^{2}}{\sigma_{i}^{2}})
+Hansen_{it} = \alpha + \theta * WeightedDistanceActiveChineseProject_{it} + \sum(\beta_{j}*X_{j}) + D_{region} + D_{t} + D_{region} * t + \epsilon_{it}
+%\frac{1}{(2\pi)^{1/2}*\sigma_{i}} * exp(-\frac{1}{2}*\frac{(x-\mu_{i})^{2}}{\sigma_{i}^{2}})
 \end{equation}
-where \textit{x} is the LTDR value of the unit being classified as forest or non-forest (represented as classes \textit{c}), \begin{math}\mu_{i}\end{math} is the estimated mean of all LTDR values determined to be included in class \textit{i} and \begin{math}\sigma_{i}^{2}\end{math} is the estimated variance of each class, i.e. \begin{math}x \in forest (c_{1}) \end{math}when:
-\begin{equation}
-\rho (x | c_{1}) * \rho(c_{1}) \geq \rho (x | c_{0}) * \rho(c_{0})
-\end{equation}
-where prior probabilities \begin{math} \rho(c_{i})\end{math} are established based on the probability of a LTDR pixel being classified as forest or non-forest in the year 2000 (i.e., the percent of the landscape occupied by each class).
-\par
 
 
 \end{knitrout}

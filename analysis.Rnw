@@ -35,6 +35,7 @@ Sys.setenv(TEXTINPUTS=getwd(),
 render_sweave()
 
 forest_thresh = 10
+rebuild_images = TRUE
 @
 
 <<Libs, include=FALSE, cache=FALSE>>=
@@ -61,7 +62,7 @@ spdf_cells <- paste(active_dir_path, "/grids/sea_grid.shp", sep="")
 cells <- readShapePoly(spdf_cells)
 #Keep only relevant cells
 AOI_cells <- sp::merge(cells, dta2, by="ID", all.x=FALSE)
-AOI_cells<- AOI_cells[1:3000,]
+#AOI_cells<- AOI_cells[1:3000,]
 proj4string(AOI_cells) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
 
 #SpatialADM data
@@ -228,11 +229,23 @@ At each distance band, a summary measure of spatial autocorrelation - Morans I -
 \begin{equation}
 I_h = (\frac{N}{\sum_{i}^{N}\sum_{j}^{N}w_{ij}}) * ((\sum_{i}^{N}\sum_{j}^{N}w_{ij} * (X_{i}-\bar{x}) * \frac{X_{j} - \bar{x}}{\sum_{i}^{N}(X_{i}-\bar{x})})^{2})
 \end{equation}
-where \textit{h} represents each spatial bin, \textit{N} the number of spatial units, \textit{i} and \textit{j} are indexes for each unit, \textit{X} is the variable of itnerest, and \begin{math}W_{ij}\end{math} represents the weights matrix.  In this application, the weights matrix is specified according to the bin (\textit{h}) being analyzed.  A best-fit gaussian spatial decay function is then found to approximate the distance decay observed on the Morans I measurements. Based on this distance-decay function, the estimated impact of chinese projects is weighted based on the cumulative distance-weighted average across all chinese projects.
+where \textit{h} represents each spatial bin, \textit{N} the number of spatial units, \textit{i} and \textit{j} are indexes for each unit, \textit{X} is the variable of itnerest, and \begin{math}W_{ij}\end{math} represents the weights matrix.  
+In this application, the weights matrix is specified according to the bin (\textit{h}) being analyzed.  
+For example, if a chinese project is 100 kilometers from a cell of interest, the relevant spatial correlation estimated in this function is used to weight that project.
 \\
 
 <<Calc_correl, echo=FALSE, include=FALSE, cache=TRUE>>=
-correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=50, latlon=TRUE, na.rm=TRUE, resamp=10)
+correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=10)
+
+#save data into a function to calculate the distance-decay penalty later.
+#Chinese projects are "weighted" according to their distance.
+#The absolulute correlation for a given distance is used as a weight.
+#Projects at distances with a higher positive or inverse correlation are given the highest
+#weights.
+
+dVals<<- abs(correlogram_data$mean.of.class)
+cVals <<- abs(correlogram_data$correlation)
+
 @
   \begin{figure}[H]
   \caption{Distance decay of spatial autocorrelation observed in 1999 Forest Cover, as measured using the LTDR dataset.}
@@ -243,30 +256,47 @@ plot(correlogram_data)
 @
 \end{figure}
 
-As this correlogram illustrates, a lack of positive spatial autocorrelation among LTDR measurements in 1999 is first observed at approximately \Sexpr{round(as.numeric(correlogram_data$x.intercept))} km.  We use this distance as a threshold to screen nearby Chinese aid projects - i.e., the average and sum distance of all Chinese aid projects within \Sexpr{round(as.numeric(correlogram_data$x.intercept))} km is taken for each cell, and projects beyond that distance are not included.  These two values - the average and summed distance of Chinese aid projects - are used as our approximation of the strength of Chinese interventions within any given cell on the landscape.
+As this correlogram illustrates, a lack of positive spatial autocorrelation among LTDR measurements in 1999 is first observed at approximately \Sexpr{round(as.numeric(correlogram_data$x.intercept))} km.  
+We use this distance as a threshold to screen nearby Chinese aid projects - i.e., the average and sum distance of all Chinese aid projects within \Sexpr{round(as.numeric(correlogram_data$x.intercept))} km is taken for each cell, and projects beyond that distance are not included.  
+These two values - the average and summed distance of Chinese aid projects - are used as our approximation of the strength of Chinese interventions within any given cell on the landscape.
 \par
 
 <<Distance_thresholding, echo=FALSE>>=
+#Strict threshold data-
+#no weights, all before the first time X = 0 are counted.
 thresh_dMatrix <- dMatrix
 thresh_dMatrix[thresh_dMatrix > (as.numeric(correlogram_data$x.intercept)*1000)] <- NA
 total_distance_km <- colSums(thresh_dMatrix, na.rm=TRUE) / 1000
 
-AOI_cells$tot_proj <- apply(thresh_dMatrix, 2, function(x) length(which(!is.na(x))))
-AOI_cells$totDist <- total_distance_km
-AOI_cells$avgDist <- AOI_cells$totDist / AOI_cells$tot_proj 
+AOI_cells$thresh_tot_proj <- apply(thresh_dMatrix, 2, function(x) length(which(!is.na(x))))
+AOI_cells$thresh_totDist <- total_distance_km
+AOI_cells$thresh_avgDist <- AOI_cells$thresh_totDist / AOI_cells$thresh_tot_proj 
+
+#distance decay
+decay_dMatrix <- dMatrix
+decay_dMatrix_adj <- apply(decay_dMatrix, 1:2, function(x){(cVals[which.min(abs(dVals - x))] * x)[[1]]})
+AOI_cells$thresh_weightedDist <- colSums(decay_dMatrix_adj) / 1000
+
 @
 
   \begin{figure}[H]
-  \caption{Average Distance, Total Distance, and Total Count of Projects within \Sexpr{round(as.numeric(correlogram_data$x.intercept))} of each cell.}
+  \caption{Potential measurements of treatment indicator.}
 \label{Proj_Avg_Dist}
 \centering
-<<Treatment_Map, echo=FALSE, fig="TRUE", out.width="0.8\\linewidth">>=
-mapAvg = spplot(AOI_cells, "avgDist", main=paste("Average Distance to Chinese Aid Projects (within ",round(correlogram_data$x.intercept)," km)", sep=""), sub="Kilometers", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))
-mapCnt = spplot(AOI_cells, "tot_proj", main=paste("Total Nearby (within ",round(correlogram_data$x.intercept)," km) Chinese projects", sep=""), sub="Kilometers", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))
-par(mfrow=c(2,1))
-mapAvg
-mapCnt
+<<Treatment_Map, echo=FALSE, fig="TRUE", out.width="0.8\\linewidth", cache=TRUE>>=
+mapAvg = spplot(AOI_cells, "thresh_avgDist", col="transparent", main=list(label=paste("Average Distance \n (within ",round(correlogram_data$x.intercept)," km) \n to Chinese projects", sep=""),cex=0.75), sub="Threshold Approach", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))
+mapCnt = spplot(AOI_cells, "thresh_tot_proj", col="transparent", main=list(label=paste("Total Nearby \n (within ",round(correlogram_data$x.intercept)," km) \n Chinese projects", sep=""),cex=0.75), sub="Threshold Approach", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))
+mapTotDist =  spplot(AOI_cells, "thresh_totDist", col="transparent", main=list(label=paste("Total Distance of Nearby \n (within ",round(correlogram_data$x.intercept)," km) \n Chinese projects", sep=""),cex=0.75), sub="Threshold Approach", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))
+mapWeightedDist =  spplot(AOI_cells, "thresh_weightedDist", col="transparent", main=list(label="Weighted Distance \n of \n Chinese projects",cex=0.75), sub="Distance Decay Approach", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))
+
+if(rebuild_images == TRUE)
+{
+png(filename="mapFigs.png", width=7, height=5, units="in", res=300)
+grid.arrange(mapAvg, mapCnt, mapTotDist,mapWeightedDist, nrow=2, ncol=2, heights=c(unit(2.5, "inches"),unit(2.5, "inches")),widths=c(unit(3.5, "inches"),unit(3.5, "inches")))
+dev.off()
+}
 @
+\includegraphics{mapFigs}
 \end{figure}
 
 Functional Form of Analysis:

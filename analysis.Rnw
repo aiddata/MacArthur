@@ -48,7 +48,7 @@ mDir = getwd()
 active_dir_path  <- downlad_data(mDir)
 @
 
-<<DataDataFramesLoad, include=FALSE, cache=TRUE>>=
+<<DataDataFramesLoad, include=FALSE, cache=FALSE>>=
 csv <- paste(active_dir_path, "/extracts/sea.csv", sep="")
 json <- paste(active_dir_path, "/extracts/sea.json", sep="")
 dta <- read.csv(csv)
@@ -234,7 +234,7 @@ In this application, the weights matrix is specified according to the bin (\text
 For example, if a chinese project is 100 kilometers from a cell of interest, the relevant spatial correlation estimated in this function is used to weight that project.
 \\
 
-<<Calc_correl, echo=FALSE, include=FALSE, cache=TRUE>>=
+<<Calc_correl, echo=FALSE, include=FALSE, cache=FALSE>>=
 correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=10)
 
 #save data into a function to calculate the distance-decay penalty later.
@@ -283,7 +283,7 @@ AOI_cells$thresh_weightedDist <- colSums(decay_dMatrix_adj) / 1000
   \caption{Potential measurements of treatment indicator.}
 \label{Proj_Avg_Dist}
 \centering
-<<Treatment_Map, echo=FALSE, fig="TRUE", out.width="0.8\\linewidth", cache=TRUE>>=
+<<Treatment_Map, echo=FALSE, fig="TRUE", out.width="0.8\\linewidth", cache=FALSE>>=
 mapAvg = spplot(AOI_cells, "thresh_avgDist", col="transparent", main=list(label=paste("Average Distance \n (within ",round(correlogram_data$x.intercept)," km) \n to Chinese projects", sep=""),cex=0.75), sub="Threshold Approach", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))
 mapCnt = spplot(AOI_cells, "thresh_tot_proj", col="transparent", main=list(label=paste("Total Nearby \n (within ",round(correlogram_data$x.intercept)," km) \n Chinese projects", sep=""),cex=0.75), sub="Threshold Approach", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))
 mapTotDist =  spplot(AOI_cells, "thresh_totDist", col="transparent", main=list(label=paste("Total Distance of Nearby \n (within ",round(correlogram_data$x.intercept)," km) \n Chinese projects", sep=""),cex=0.75), sub="Threshold Approach", sp.layout=list(Mac_spdf, pch=16, col="red", cex=1.0))

@@ -30,7 +30,7 @@ Sys.setenv(TEXTINPUTS=getwd(),
            BSTINPUTS=getwd())
 render_sweave()
 #Make sure this is set correctly for builds.
-rebuild_images = FALSE
+rebuild_images = TRUE
 source("MacArthur_Paper_Analysis.R")
 @
 

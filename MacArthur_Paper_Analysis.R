@@ -16,7 +16,7 @@ library(lmtest)
 #---------------------------------------------------#
 
 forest_thresh = 10
-restrict_analysis = 100
+restrict_analysis = FALSE
 
 #---------------------------------------------------#
 #Download Data for Analysis - This step may take a while (up to hours)

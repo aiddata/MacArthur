@@ -15,7 +15,7 @@ library(lmtest)
 #Settings
 #---------------------------------------------------#
 
-forest_thresh = 10
+forest_thresh = 20
 restrict_analysis = FALSE
 
 #---------------------------------------------------#

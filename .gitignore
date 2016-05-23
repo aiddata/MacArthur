@@ -20,3 +20,5 @@
 figure
 analysis_data
 .Rproj.user
+.Ruserdata
+.Rdata

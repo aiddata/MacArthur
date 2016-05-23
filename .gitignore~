@@ -16,5 +16,8 @@
 *.tex
 *.log
 *.gz
+*.pdf
+figure
 analysis_data
 .Rproj.user
+.Rdata

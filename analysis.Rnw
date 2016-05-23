@@ -1,9 +1,12 @@
-
+%See MacArthur_Paper_Analysis.R for instructions on how to configure the
+%Analysis supporting this script.
 %tools>global options>sweave>weave rnw files using: knitr
 
 %sudo apt-get install texlive
 %sudo apt-get install texlive-latex-extra 
 %sudo apt-get install texlive-bibtex-extra
+%sudo apt-get install texlive-fonts-recommended
+
 \documentclass{article}
 \usepackage{float}
 \usepackage{wrapfig}

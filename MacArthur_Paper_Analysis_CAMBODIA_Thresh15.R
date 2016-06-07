@@ -15,7 +15,7 @@ library(lmtest)
 #Settings
 #---------------------------------------------------#
 
-forest_thresh = 10
+forest_thresh = 15
 restrict_analysis = FALSE
 
 #---------------------------------------------------#
@@ -28,20 +28,20 @@ active_dir_path  <- downlad_data(mDir)
 #---------------------------------------------------#
 #Load the dataframes in for analysis after download.
 #---------------------------------------------------#
-csv <- paste(active_dir_path, "/extracts/africa.csv", sep="")
-json <- paste(active_dir_path, "/extracts/africa.json", sep="")
+csv <- paste(active_dir_path, "/extracts/sea.csv", sep="")
+json <- paste(active_dir_path, "/extracts/sea.json", sep="")
 dta <- read.csv(csv)
 vars <- fromJSON(txt=json)
 
 #--------------------------------------------------#
 #Subset the Cell Dataframe 
 #--------------------------------------------------#
-dta2 <- dta[dta$NAME_0 == "Tanzania",]
+dta2 <- dta[dta$NAME_0 == "Cambodia",]
 
 #--------------------------------------------------#
 #Load and Subset the Cell Spatial Datframe
 #--------------------------------------------------#
-spdf_cells <- paste(active_dir_path, "/grids/africa_grid.shp", sep="")
+spdf_cells <- paste(active_dir_path, "/grids/sea_grid.shp", sep="")
 cells <- readShapePoly(spdf_cells)
 #Keep only relevant cells
 AOI_cells <- sp::merge(cells, dta2, by="ID", all.x=FALSE)
@@ -58,14 +58,14 @@ proj4string(AOI_cells) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
 spdf_adm_path <- paste(active_dir_path, "/ADM2/GADM_MacEcohotspotSubset_ADM2.shp", sep="")
 spdf_adm <- readShapePoly(spdf_adm_path)
 #Keep only relevant ADM data
-spdf_adm <- spdf_adm[spdf_adm@data$NAME_0 == "Tanzania",]
+spdf_adm <- spdf_adm[spdf_adm@data$NAME_0 == "Cambodia",]
 
 #--------------------------------------------------#
 #Load and Subset the MacArthur Aid Data
 #--------------------------------------------------#
 location_csv <- paste(active_dir_path, "/MacArthur_Geocoded_data/locations.csv", sep="")
 locations <- read.csv(location_csv)
-locations2 <- locations[grep("Tanzania", locations$gazetteer_adm_name),]
+locations2 <- locations[grep("Cambodia", locations$gazetteer_adm_name),]
 coords = cbind(locations2$longitude, locations2$latitude)
 
 #--------------------------------------------------#
@@ -80,14 +80,14 @@ Mac_spdf <- merge(Mac_spdf, Mac_yr_dta, by="project_id")
 #Subset by precision code = 1 or 2
 Mac_prec <- Mac_spdf[Mac_spdf@data$precision_code<=2,]
 Mac_spdf <- Mac_prec
-#Subset by sector code (combined social projects)
-Mac_sector <- Mac_spdf[Mac_spdf@data$crs_sector_code%in%c("110","120","130"),]
+#Subset by sector code (combined infrastructure projects, no sector code "160")
+Mac_sector <- Mac_spdf[Mac_spdf@data$crs_sector_code%in%c("210","220","230","320"),]
 Mac_spdf <- Mac_sector
 #Subset by status = implementation or completion (not pipeline)
 Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
 
-writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaSoc.shp")
+writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia_Thresh15.shp")
 
 #--------------------------------------------------#
 #Create threshdolded forest datasets
@@ -115,11 +115,11 @@ minDistKm <- mean(col_mins) / 1000
 #--------------------------------------------------#
 #Calculate the correlogram
 #--------------------------------------------------#
-#correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=50)
+correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=50)
 
-#save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
+save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_correl_Thresh15.RData")
 
-load("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
+#load("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_correl_Thresh5.RData")
 
 #save data into a function to calculate the distance-decay penalty later.
 #Chinese projects are "weighted" according to their distance.
@@ -154,7 +154,7 @@ AOI_cells2 <- AOI_cells[!(is.na(AOI_cells@data$thresh_avgDist)),]
 AOI_cellsBack <- AOI_cells
 AOI_cells <- AOI_cells2
 
-writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_TanzaniaSoc.shp")
+writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_Cambodia_Thresh15.shp")
 
 #--------------------------------------------------#
 #Calculate the over-time treatment effects
@@ -262,6 +262,9 @@ for(years in 1:length(record_length))
     AOI_cells@data[nameRef] <- 0
   }
 }
+#---------------------------
+
+
 
 CountProj_Years <- vector()
 for(years in 1:length(record_length))
@@ -473,5 +476,4 @@ for(i in 1:length(Panel_Data[[1]]))
 }
 
 
-write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/TanzaniaSocial_Thresh10.csv")
-
+write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_Thresh15.csv")

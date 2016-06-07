@@ -15,7 +15,7 @@ library(lmtest)
 #Settings
 #---------------------------------------------------#
 
-forest_thresh = 10
+forest_thresh = 15
 restrict_analysis = FALSE
 
 #---------------------------------------------------#
@@ -87,7 +87,7 @@ Mac_spdf <- Mac_sector
 Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
 
-writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaSoc.shp")
+writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaSoc_Thresh15.shp")
 
 #--------------------------------------------------#
 #Create threshdolded forest datasets
@@ -119,7 +119,7 @@ minDistKm <- mean(col_mins) / 1000
 
 #save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
 
-load("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
+load("/home/aiddata/Desktop/Github/MacArthur/modelData/tanz_correl_Thresh15.RData")
 
 #save data into a function to calculate the distance-decay penalty later.
 #Chinese projects are "weighted" according to their distance.
@@ -154,7 +154,7 @@ AOI_cells2 <- AOI_cells[!(is.na(AOI_cells@data$thresh_avgDist)),]
 AOI_cellsBack <- AOI_cells
 AOI_cells <- AOI_cells2
 
-writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_TanzaniaSoc.shp")
+writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_TanzaniaSoc_Thresh15.shp")
 
 #--------------------------------------------------#
 #Calculate the over-time treatment effects
@@ -262,6 +262,9 @@ for(years in 1:length(record_length))
     AOI_cells@data[nameRef] <- 0
   }
 }
+#---------------------------
+
+
 
 CountProj_Years <- vector()
 for(years in 1:length(record_length))
@@ -473,5 +476,5 @@ for(i in 1:length(Panel_Data[[1]]))
 }
 
 
-write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/TanzaniaSocial_Thresh10.csv")
+write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/TanzaniaSocial_Thresh15.csv")
 

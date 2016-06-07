@@ -28,6 +28,10 @@ names(Panel_Data_soc)[names(Panel_Data_soc) == "DecayAddControl"] = "DecayAddCon
 ##Merge social and infrastructure datasets to create 1 panel dataset with cell distance to infra and social project locations
 Panel_Data<- merge(Panel_Data_infra,Panel_Data_soc, by=c("ID","Year"))
 
+#Add Post-2008 indicator
+Panel_Data$post_2008<-0
+Panel_Data$post_2008[Panel_Data$Year>=2008]<-1
+
 ##Correlogram
 #Load and identify x intercept
 load("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
@@ -64,14 +68,22 @@ initModel1 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayYr_additive_soc 
                    Elevation + Slope + factor(District) + factor(Year), data=Panel_Data)
 cluster1 <- cluster.vcov(initModel1, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG1 <- coeftest(initModel1, cluster1)
-CMREG1
 
-initModel2 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayYr_additive_soc + DecayAddControl + DecayAddControl_soc + 
-                   PreLevelControl + PreTrendControl + MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + 
-                   Elevation + Slope + Year + factor(District), data=Panel_Data)
-cluster2 <- cluster.vcov(initModel2, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
-CMREG2 <- coeftest(initModel2, cluster2)
-CMREG2
+
+initModel7 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl+ DecayYr_additive_soc + DecayAddControl_soc + 
+                   PreLevelControl + PreTrendControl + MinTemp + MaxTemp + MeanTemp + MaxPrecip + 
+                   MeanPrecip + MinPrecip + 
+                   Elevation + Slope + Year +post_2008 + post_2008*Year + factor(District), data=Panel_Data)
+cluster7 <- cluster.vcov(initModel7, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+CMREG7 <- coeftest(initModel7, cluster7)
+
+
+# initModel2 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayYr_additive_soc + DecayAddControl + DecayAddControl_soc + 
+#                    PreLevelControl + PreTrendControl + MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + 
+#                    Elevation + Slope + Year + factor(District), data=Panel_Data)
+# cluster2 <- cluster.vcov(initModel2, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+# CMREG2 <- coeftest(initModel2, cluster2)
+# CMREG2
 
 #infra only
 
@@ -80,14 +92,14 @@ initModel3 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl +
                   Elevation + Slope + factor(District) + factor(Year), data=Panel_Data)
 cluster3 <- cluster.vcov(initModel3, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG3 <- coeftest(initModel3, cluster3)
-CMREG3
+
 
 initModel4 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + 
                    PreLevelControl + PreTrendControl + MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + 
-                   Elevation + Slope + Year + factor(District), data=Panel_Data)
+                   Elevation + Slope + Year + post_2008*Year + factor(District), data=Panel_Data)
 cluster4 <- cluster.vcov(initModel4, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG4 <- coeftest(initModel4, cluster4)
-CMREG4
+
 
 #soc only
 
@@ -106,7 +118,5 @@ CMREG6 <- coeftest(initModel6, cluster6)
 CMREG6
 
 
-
-
-stargazer(CMREG3, CMREG4, CMREG5, CMREG6, CMREG1, CMREG2, type="html", keep=c("additive","Control","Min","Max","Elevation","Slope","Year"))
+stargazer(CMREG3, CMREG4, CMREG5, CMREG6, CMREG1, CMREG7, type="html", keep=c("additive","Control","Min","Max","Elevation","Slope","2008","Year"))
 

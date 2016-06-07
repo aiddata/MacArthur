@@ -15,7 +15,7 @@ library(lmtest)
 #Settings
 #---------------------------------------------------#
 
-forest_thresh = 10
+forest_thresh = 15
 restrict_analysis = FALSE
 
 #---------------------------------------------------#
@@ -80,14 +80,18 @@ Mac_spdf <- merge(Mac_spdf, Mac_yr_dta, by="project_id")
 #Subset by precision code = 1 or 2
 Mac_prec <- Mac_spdf[Mac_spdf@data$precision_code<=2,]
 Mac_spdf <- Mac_prec
-#Subset by sector code (combined social projects)
-Mac_sector <- Mac_spdf[Mac_spdf@data$crs_sector_code%in%c("110","120","130"),]
+#Subset by sector code (combined infrastructure projects)
+Mac_sector <- Mac_spdf[Mac_spdf@data$crs_sector_code%in%c("160","210","220","230","320"),]
 Mac_spdf <- Mac_sector
 #Subset by status = implementation or completion (not pipeline)
 Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
+#Take out sector 160 projects that aren't building infrastructure
+Mac_160<- Mac_spdf[Mac_spdf@data$project_id!="33053",]
+Mac_160<- Mac_160[Mac_160@data$project_id!="1919",]
+Mac_spdf <- Mac_160
 
-writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaSoc.shp")
+writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Tanz_Thresh15.shp")
 
 #--------------------------------------------------#
 #Create threshdolded forest datasets
@@ -115,11 +119,11 @@ minDistKm <- mean(col_mins) / 1000
 #--------------------------------------------------#
 #Calculate the correlogram
 #--------------------------------------------------#
-#correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=50)
+correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=50)
 
-#save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
+save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/tanz_correl_Thresh15.RData")
 
-load("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
+#load("/home/aiddata/Desktop/Github/MacArthur/modelData/tanz_correl_Thresh15.RData")
 
 #save data into a function to calculate the distance-decay penalty later.
 #Chinese projects are "weighted" according to their distance.
@@ -154,7 +158,7 @@ AOI_cells2 <- AOI_cells[!(is.na(AOI_cells@data$thresh_avgDist)),]
 AOI_cellsBack <- AOI_cells
 AOI_cells <- AOI_cells2
 
-writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_TanzaniaSoc.shp")
+writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_Tanzania_Thresh15.shp")
 
 #--------------------------------------------------#
 #Calculate the over-time treatment effects
@@ -262,6 +266,9 @@ for(years in 1:length(record_length))
     AOI_cells@data[nameRef] <- 0
   }
 }
+#---------------------------
+
+
 
 CountProj_Years <- vector()
 for(years in 1:length(record_length))
@@ -473,5 +480,5 @@ for(i in 1:length(Panel_Data[[1]]))
 }
 
 
-write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/TanzaniaSocial_Thresh10.csv")
+write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/TanzaniaInfra_Thresh15.csv")
 

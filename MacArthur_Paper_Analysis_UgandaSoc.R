@@ -80,12 +80,13 @@ Mac_spdf <- merge(Mac_spdf, Mac_yr_dta, by="project_id")
 #Subset by precision code = 1 or 2
 Mac_prec <- Mac_spdf[Mac_spdf@data$precision_code<=2,]
 Mac_spdf <- Mac_prec
-#Subset by sector code (all combined social sector projects)
+#Subset by sector code (combined infrastructure projects)
 Mac_sector <- Mac_spdf[Mac_spdf@data$crs_sector_code%in%c("110","120","130"),]
 Mac_spdf <- Mac_sector
 #Subset by status = implementation or completion (not pipeline)
 Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
+
 
 writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_UgandaSoc.shp")
 
@@ -117,6 +118,8 @@ minDistKm <- mean(col_mins) / 1000
 #--------------------------------------------------#
 #correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=50)
 
+#save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/uganda_correl.RData")
+
 load("/home/aiddata/Desktop/Github/MacArthur/modelData/uganda_correl.RData")
 
 #save data into a function to calculate the distance-decay penalty later.
@@ -140,6 +143,8 @@ AOI_cells$thresh_tot_proj <- apply(thresh_dMatrix, 2, function(x) length(which(!
 AOI_cells$thresh_totDist <- total_distance_km
 AOI_cells$thresh_avgDist <- AOI_cells$thresh_totDist / AOI_cells$thresh_tot_proj 
 
+
+
 #distance decay
 decay_dMatrix <- dMatrix
 decay_dMatrix_adj <- apply(decay_dMatrix, 1:2, function(x){(cVals[which.min(abs(dVals - x))] * x)[[1]]})
@@ -150,7 +155,7 @@ AOI_cells2 <- AOI_cells[!(is.na(AOI_cells@data$thresh_avgDist)),]
 AOI_cellsBack <- AOI_cells
 AOI_cells <- AOI_cells2
 
-writePolyShape(AOI_cells2, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells2_UgandaSoc")
+writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_UgandaSoc.shp")
 
 #--------------------------------------------------#
 #Calculate the over-time treatment effects
@@ -231,6 +236,36 @@ for(years in 1:length(record_length))
 }
 
 
+#---------------------------
+#PROJECT YEARS START COUNT
+Proj_Thresh_Count_Yrs <- vector()
+#in KM
+thresh <- 100
+cthreshVals <- cVals
+
+cthreshVals[dVals <= thresh] <- 1
+cthreshVals[dVals > thresh] <- 0
+
+for(years in 1:length(record_length))
+{
+  if(record_length[[years]] %in% all_years)
+  {
+    t_dyears <- dYears[[years]] / 1000
+    decay_dMatrix_adj <- apply(t_dyears, 1:2, function(x){(cthreshVals[which.min(abs(dVals - x))])[[1]]})
+    nameRef <- paste("Proj_Thresh_Count_Yrs_",record_length[[years]], sep="")
+    AOI_cells@data[nameRef] <- colSums(decay_dMatrix_adj)
+    Proj_Thresh_Count_Yrs[[years]] <- sum(colSums(decay_dMatrix_adj))
+  }
+  else
+  {
+    Proj_Thresh_Count_Yrs[[years]] <- 0
+    nameRef <- paste("Proj_Thresh_Count_Yrs_",record_length[[years]], sep="")
+    AOI_cells@data[nameRef] <- 0
+  }
+}
+#---------------------------
+
+
 
 CountProj_Years <- vector()
 for(years in 1:length(record_length))
@@ -246,7 +281,7 @@ for(years in 1:length(record_length))
 }
 
 #Build a quick temporal dataframe for plotting and ordering
-TempDF <- cbind.data.frame(record_length, AvgYears, Avg_MinYears, CountProj_Years, Dist_Decay_Yrs)
+TempDF <- cbind.data.frame(record_length, AvgYears, Avg_MinYears, CountProj_Years, Dist_Decay_Yrs, Proj_Thresh_Count_Yrs)
 TempDF <- TempDF[with(TempDF, order(TempDF[,1])),]
 
 
@@ -333,6 +368,12 @@ for (i in 2:length(DFa))
   colnames(DFa)[i] <- sub("per_loss_","loss_",colnames(DFa)[i])
 }
 
+for (i in 2:length(DFa))
+{
+  colnames(DFa)[i] <- sub("Proj_Thresh_Count_Yrs","ProjCnt100",colnames(DFa)[i])
+}
+
+
 #drop data for the year 2000, 2013-2015 (NTL ends in 2012)
 DFa2 <- DFa[, -grep("(2000)", names(DFa))]
 # DFa3 <- DFa2[, -grep("(2013)", names(DFa2))]
@@ -353,13 +394,13 @@ maxPre <- grep("^xpc41", names(DFa3))
 meanPre <- grep("^epc41", names(DFa3))
 MinDist <- grep("^MinYr", names(DFa3))
 DecayDist <- grep("^DecayYr", names(DFa3))
-
+ProjCount <- grep("^ProjCnt100", names(DFa3))
 
 #--------------------------------------------------#
 #Selection of temporally-varying variables and shift from wide- to long-form
 #--------------------------------------------------#
 
-all_reshape <- c(PCloss, mean_ln, minairTemp, maxairTemp, meanairTemp, minPre, maxPre, meanPre, MinDist, DecayDist)
+all_reshape <- c(PCloss, mean_ln, minairTemp, maxairTemp, meanairTemp, minPre, maxPre, meanPre, MinDist, DecayDist, ProjCount)
 DFa4 <- reshape(DFa3, varying=all_reshape,direction="long", idvar="ID", sep="_", timevar="Year")
 
 DFa <- DFa4
@@ -378,8 +419,7 @@ names(DFa)[names(DFa) == "selv_e"] = "Elevation"
 names(DFa)[names(DFa) == "sslp_e"] = "Slope"
 names(DFa)[names(DFa) == "dari_e"] = "RivDist"
 names(DFa)[names(DFa) == "droa_e"] = "RoadDist"
-
-
+names(DFa)[names(DFa) == "am50_e"] = "UrbTravTime"
 
 
 #--------------------------------------------------#
@@ -406,8 +446,9 @@ for(i in 1:length(Panel_Data[[1]]))
 {
   Panel_Data["DecayYr_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "DecayYr")
   Panel_Data["MinYr_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "MinYr")
-  #Panel_Data["Forest_Loss_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "Forest_Loss")
+  Panel_Data["Forest_Loss_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "Forest_Loss")
 }
+
 
 #Control Variables
 
@@ -431,9 +472,10 @@ Panel_Data["PreTrendControl"] <- NA
 for(i in 1:length(Panel_Data[[1]]))
 {
   Panel_Data["DecayAddControl"][i,] <- calc_add(Panel_Data, max(Panel_Data["Year"][[1]]), Panel_Data[i,]["ID"][[1]], "DecayYr")
-  #Panel_Data["PreLevelControl"][i,] <- AOI_cells@data$lnyx_1999e[AOI_cells@data$ID == Panel_Data[i,]["ID"][[1]]]
-  #Panel_Data["PreTrendControl"][i,] <- pre_trend_func(AOI_cells@data, Panel_Data[i,]["ID"][[1]])
+  Panel_Data["PreLevelControl"][i,] <- AOI_cells@data$lnyx_1999e[AOI_cells@data$ID == Panel_Data[i,]["ID"][[1]]]
+  Panel_Data["PreTrendControl"][i,] <- pre_trend_func(AOI_cells@data, Panel_Data[i,]["ID"][[1]])
 }
 
 
 write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/uganda_soc.csv")
+

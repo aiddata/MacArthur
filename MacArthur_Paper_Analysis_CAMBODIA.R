@@ -115,9 +115,9 @@ minDistKm <- mean(col_mins) / 1000
 #--------------------------------------------------#
 #Calculate the correlogram
 #--------------------------------------------------#
-correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=5)
+#correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=5)
 
-save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_correl.RData")
+#save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_correl.RData")
 
 load("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_correl.RData")
 
@@ -143,10 +143,9 @@ AOI_cells$thresh_totDist <- total_distance_km
 AOI_cells$thresh_avgDist <- AOI_cells$thresh_totDist / AOI_cells$thresh_tot_proj 
 
 
-
 #distance decay
 decay_dMatrix <- dMatrix
-decay_dMatrix_adj <- apply(decay_dMatrix, 1:2, function(x){(cVals[which.min(abs(dVals - x))] * x)[[1]]})
+decay_dMatrix_adj <- apply(decay_dMatrix, 1:2, function(x){(cVals[which.min(abs(dVals - x))])[[1]]})
 AOI_cells$thresh_weightedDist <- colSums(decay_dMatrix_adj) / 1000
 
 #Drop cells which have no projects within the threshold
@@ -216,15 +215,17 @@ for(years in 1:length(record_length))
 }
 
 Dist_Decay_Yrs <- vector()
+dvz <- cVals
+dvz[dVals > correlogram_data$x.intercept] <- 0
 for(years in 1:length(record_length))
 {
   if(record_length[[years]] %in% all_years)
   {
   t_dyears <- dYears[[years]] / 1000
-  decay_dMatrix_adj <- apply(t_dyears, 1:2, function(x){(cVals[which.min(abs(dVals - x))] * x)[[1]]})
+  decay_dMatrix_adj <- apply(t_dyears, 1:2, function(x){(dvz[which.min(abs(dVals - x))])[[1]]})
   nameRef <- paste("DecayYr_",record_length[[years]], sep="")
-  AOI_cells@data[nameRef] <- colMeans(decay_dMatrix_adj) / 1000
-  Dist_Decay_Yrs[[years]] <- mean(colMeans(decay_dMatrix_adj) / 1000)
+  AOI_cells@data[nameRef] <- colSums(decay_dMatrix_adj) 
+  Dist_Decay_Yrs[[years]] <- sum(colSums(decay_dMatrix_adj))
   }
   else
   {
@@ -318,7 +319,9 @@ for(years in 1:length(record_length))
 #--------------------------------------------------#
 DFa <- AOI_cells@data
 #Drop irrelevant variables:
-dropvars <- c("XMIN","XMAX","YMIN","YMAX","OBJECTID","ID_0","ISO","NAME_0","HASC_2","ID_1","NAME_1","NAME_2","CCN_2","CCA_2","TYPE_2","ENGTYPE_2","NL_NAME_2","VARNAME_2","Shape_Leng","Shape_Area", "thresh_tot_proj","thresh_totDist","thresh_avgDist","thresh_weightedDist")
+dropvars <- c("XMIN","XMAX","YMIN","YMAX","OBJECTID","ID_0","ISO","NAME_0","HASC_2","ID_1","NAME_1","NAME_2",
+              "CCN_2","CCA_2","TYPE_2","ENGTYPE_2","NL_NAME_2","VARNAME_2","Shape_Leng","Shape_Area", 
+              "thresh_tot_proj","thresh_totDist","thresh_avgDist","thresh_weightedDist")
 
 DFa <- DFa[,!(names(DFa) %in% dropvars)]
 DFa_hist <- DFa

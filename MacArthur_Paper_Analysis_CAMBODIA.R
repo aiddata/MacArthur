@@ -237,7 +237,7 @@ for(years in 1:length(record_length))
 
 
 #---------------------------
-#PROJECT YEARS START COUNT (all projects within 100km weighted equally)
+#PROJECT YEARS START COUNT (count of all projects within 100km)
 #---------------------------
 Proj_Thresh_Count_Yrs <- vector()
 #in KM
@@ -288,6 +288,34 @@ for(years in 1:length(record_length))
   {
     DistDecay100[[years]] <- 0
     nameRef <- paste("DistDecay100_",record_length[[years]], sep="")
+    AOI_cells@data[nameRef] <- 0
+  }
+}
+
+#---------------------------
+#Limit distance decay threshold to 25km (rather than the x-intercept)
+#---------------------------
+
+DistDecay25 <- vector()
+#in KM
+thresh <- 25
+cthreshVals_decay25 <- cVals
+cthreshVals_decay25[dVals > thresh] <- 0
+
+for(years in 1:length(record_length))
+{
+  if(record_length[[years]] %in% all_years)
+  {
+    t_dyears <- dYears[[years]] / 1000
+    decay_dMatrix_adj <- apply(t_dyears, 1:2, function(x){(cthreshVals_decay25[which.min(abs(dVals - x))])[[1]]})
+    nameRef <- paste("DistDecay25_",record_length[[years]], sep="")
+    AOI_cells@data[nameRef] <- colSums(decay_dMatrix_adj)
+    DistDecay25[[years]] <- sum(colSums(decay_dMatrix_adj))
+  }
+  else
+  {
+    DistDecay25[[years]] <- 0
+    nameRef <- paste("DistDecay25_",record_length[[years]], sep="")
     AOI_cells@data[nameRef] <- 0
   }
 }
@@ -424,12 +452,14 @@ meanPre <- grep("^epc41", names(DFa3))
 MinDist <- grep("^MinYr", names(DFa3))
 DecayDist <- grep("^DecayYr", names(DFa3))
 ProjCount <- grep("^ProjCnt100", names(DFa3))
+DecayDist100<- grep("^DistDecay100", names(DFa3))
+DecayDist25<- grep("^DistDecay25", names(DFa3))
 
 #--------------------------------------------------#
 #Selection of temporally-varying variables and shift from wide- to long-form
 #--------------------------------------------------#
 
-all_reshape <- c(PCloss, mean_ln, minairTemp, maxairTemp, meanairTemp, minPre, maxPre, meanPre, MinDist, DecayDist, ProjCount)
+all_reshape <- c(PCloss, mean_ln, minairTemp, maxairTemp, meanairTemp, minPre, maxPre, meanPre, MinDist, DecayDist, ProjCount, DecayDist100, DecayDist25)
 DFa4 <- reshape(DFa3, varying=all_reshape,direction="long", idvar="ID", sep="_", timevar="Year")
 
 DFa <- DFa4
@@ -449,15 +479,20 @@ names(DFa)[names(DFa) == "sslp_e"] = "Slope"
 names(DFa)[names(DFa) == "dari_e"] = "RivDist"
 names(DFa)[names(DFa) == "droa_e"] = "RoadDist"
 names(DFa)[names(DFa) == "am50_e"] = "UrbTravTime"
+names(DFa)[names(DFa) == "DistDecay100"] = "DecayYr100"
+names(DFa)[names(DFa) == "DistDecay25"] = "DecayYr25"
 
 
 #--------------------------------------------------#
 #Additive Year-on-Year 
 #--------------------------------------------------#
 Panel_Data <- DFa
-Panel_Data$MinYr_additive <- NA
+#Panel_Data$MinYr_additive <- NA
 Panel_Data$DecayYr_additive <- NA
 Panel_Data$Forest_Loss_additive <- NA
+Panel_Data$DecayYr100_additive <- NA
+Panel_Data$DecayYr25_additive <- NA
+Panel_Data$ProjCnt100_additive <- NA
 
 Panel_Data <- Panel_Data[with(Panel_Data, order(Panel_Data["ID"], Panel_Data["Year"])),]
 
@@ -474,10 +509,12 @@ calc_add <- function(Fdta, year, ID, var)
 for(i in 1:length(Panel_Data[[1]]))
 {
   Panel_Data["DecayYr_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "DecayYr")
-  Panel_Data["MinYr_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "MinYr")
+  Panel_Data["DecayYr100_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "DecayYr100")
+  Panel_Data["DecayYr25_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "DecayYr25")
+  #Panel_Data["MinYr_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "MinYr")
   Panel_Data["Forest_Loss_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "Forest_Loss")
+  Panel_Data["ProjCnt100_additive"][i,] <- calc_add(Panel_Data, Panel_Data[i,]["Year"][[1]], Panel_Data[i,]["ID"][[1]], "ProjCnt100")
 }
-
 
 #Control Variables
 
@@ -496,14 +533,18 @@ pre_trend_func <- function(dta, id)
 }
 
 Panel_Data["DecayAddControl"] <- NA
+Panel_Data["DecayAddControl100"]<- NA
+Panel_Data["DecayAddControl25"] <- NA
 Panel_Data["PreLevelControl"] <- NA
 Panel_Data["PreTrendControl"] <- NA
 for(i in 1:length(Panel_Data[[1]]))
 {
   Panel_Data["DecayAddControl"][i,] <- calc_add(Panel_Data, max(Panel_Data["Year"][[1]]), Panel_Data[i,]["ID"][[1]], "DecayYr")
+  Panel_Data["DecayAddControl100"][i,] <- calc_add(Panel_Data, max(Panel_Data["Year"][[1]]), Panel_Data[i,]["ID"][[1]], "DecayYr100")
+  Panel_Data["DecayAddControl25"][i,] <- calc_add(Panel_Data, max(Panel_Data["Year"][[1]]), Panel_Data[i,]["ID"][[1]], "DecayYr25")
   Panel_Data["PreLevelControl"][i,] <- AOI_cells@data$lnyx_1999e[AOI_cells@data$ID == Panel_Data[i,]["ID"][[1]]]
   Panel_Data["PreTrendControl"][i,] <- pre_trend_func(AOI_cells@data, Panel_Data[i,]["ID"][[1]])
 }
 
 
-write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_count.csv")
+write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")

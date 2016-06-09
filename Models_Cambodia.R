@@ -13,7 +13,7 @@ library(multiwayvcov)
 library(lmtest)
 
 ##Panel Data, Thresh=10
-Panel_Data <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_count.csv")
+Panel_Data <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
 
 #Add Post-2003 indicator
 Panel_Data$post_2003<-0
@@ -88,9 +88,18 @@ Model5 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl +
 cluster5 <- cluster.vcov(Model5, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG5 <- coeftest(Model5, cluster5)
 
+##Cumulative Forest Loss, treatment is distance decay within 100km
+
+Model400d <- lm(Forest_Loss_additive ~ DecayYr100_additive + DecayAddControl100 + PreLevelControl + PreTrendControl + 
+                 MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                 UrbTravTime + factor(Year) + factor(District), data=Panel_Data)
+cluster400d <- cluster.vcov(Model400d, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+CMREG400d <- coeftest(Model400d, cluster400d)
+
+
 ##Cumulative Forest Loss, treatment is project count within 100km,Thresh=10
 
-Model400 <- lm(Forest_Loss_additive ~ ProjCnt100 + PreLevelControl + PreTrendControl + 
+Model400 <- lm(Forest_Loss_additive ~ ProjCnt100_additive + PreLevelControl + PreTrendControl + 
                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
                UrbTravTime + factor(Year) + factor(District), data=Panel_Data)
 cluster400 <- cluster.vcov(Model400, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)

@@ -91,6 +91,7 @@ Mac_160<- Mac_spdf[Mac_spdf@data$project_id!="33053",]
 Mac_160<- Mac_160[Mac_160@data$project_id!="1919",]
 Mac_spdf <- Mac_160
 
+write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaInfra.csv")
 writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Tanzania.shp")
 
 #--------------------------------------------------#

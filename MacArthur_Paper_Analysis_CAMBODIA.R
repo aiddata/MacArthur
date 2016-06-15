@@ -15,7 +15,9 @@ library(lmtest)
 #Settings
 #---------------------------------------------------#
 
+#set threshold for standing forest
 forest_thresh = 10
+#set to true to arbitrarily subset dataset when testing code
 restrict_analysis = FALSE
 
 #---------------------------------------------------#
@@ -87,6 +89,7 @@ Mac_spdf <- Mac_sector
 Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
 
+write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia.csv")
 writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia.shp")
 
 #--------------------------------------------------#
@@ -103,7 +106,7 @@ AOI_cells = ndviDTA_for
 source("RDist.R")
 dMatrix <- RDist(AOI_cells, Mac_spdf)
 #In dMatrix, every column is a cell (referenced in order to AOI_cells)
-#Every row is a MacArthur project (referenced in order to Mac_spdf)
+#Every row is a MacArthur project location (referenced in order to Mac_spdf)
 
 #Average distance in KM:
 avgDistKm <- mean(dMatrix) / 1000
@@ -482,6 +485,7 @@ names(DFa)[names(DFa) == "am50_e"] = "UrbTravTime"
 names(DFa)[names(DFa) == "DistDecay100"] = "DecayYr100"
 names(DFa)[names(DFa) == "DistDecay25"] = "DecayYr25"
 
+write.csv(DFa,"/home/aiddata/Desktop/Github/MacArthur/modelData/DFa_Cambodia.csv")
 
 #--------------------------------------------------#
 #Additive Year-on-Year 

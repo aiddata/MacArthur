@@ -11,6 +11,7 @@ library(gridExtra)
 require(grid)
 library(multiwayvcov)
 library(lmtest)
+library(pastecs)
 
 ##Panel Data, Thresh=10
 Panel_Data <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
@@ -20,14 +21,14 @@ Panel_Data$post_2003<-0
 Panel_Data$post_2003[Panel_Data$Year>2003]<-1
 
 
-Panel_Data_test <- Panel_Data
-Panel_Data_test=Panel_Data_test[Panel_Data_test$MinYr!=0,]
-min <- aggregate(MinYr ~ ID, Panel_Data_test, function(x) min(x))
-colnames(min)[2] <- "MinDist"
-Panel_Data_min <- merge(Panel_Data, min, by.x="ID", by.y="ID")
-
-mean<- aggregate(DecayYr_additive~Year, Panel_Data, function(x) mean(x))
-mean
+# Panel_Data_test <- Panel_Data
+# Panel_Data_test=Panel_Data_test[Panel_Data_test$MinYr!=0,]
+# min <- aggregate(MinYr ~ ID, Panel_Data_test, function(x) min(x))
+# colnames(min)[2] <- "MinDist"
+# Panel_Data_min <- merge(Panel_Data, min, by.x="ID", by.y="ID")
+# 
+# mean<- aggregate(DecayYr_additive~Year, Panel_Data, function(x) mean(x))
+# mean
 
 ##Panel Data, Thresh=5
 
@@ -90,14 +91,34 @@ CMREG5 <- coeftest(Model5, cluster5)
 
 ##Cumulative Forest Loss, treatment is distance decay within 100km
 
-Model400d <- lm(Forest_Loss_additive ~ DecayYr100_additive + DecayAddControl100 + PreLevelControl + PreTrendControl + 
+Model104d <- lm(Forest_Loss_additive ~ DecayYr100_additive + DecayAddControl100 + PreLevelControl + PreTrendControl + 
                  MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
                  UrbTravTime + factor(Year) + factor(District), data=Panel_Data)
-cluster400d <- cluster.vcov(Model400d, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
-CMREG400d <- coeftest(Model400d, cluster400d)
+cluster104d <- cluster.vcov(Model104d, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+CMREG104d <- coeftest(Model104d, cluster104d)
+
+Model105d <- lm(Forest_Loss_additive ~ DecayYr100_additive + DecayAddControl100 + PreLevelControl + PreTrendControl + 
+                  MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                  UrbTravTime + Year +Year*post_2003 + factor(District), data=Panel_Data)
+cluster105d <- cluster.vcov(Model105d, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+CMREG105d <- coeftest(Model105d, cluster105d)
+
+##Cumulative Forest Loss, treatment is distance decay within 25km
+
+Model2504d <- lm(Forest_Loss_additive ~ DecayYr25_additive + DecayAddControl25 + PreLevelControl + PreTrendControl + 
+                  MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                  UrbTravTime + factor(Year) + factor(District), data=Panel_Data)
+cluster2504d <- cluster.vcov(Model2504d, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+CMREG2504d <- coeftest(Model2504d, cluster2504d)
+
+Model2505d <- lm(Forest_Loss_additive ~ DecayYr25_additive + DecayAddControl25 + PreLevelControl + PreTrendControl + 
+                  MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                  UrbTravTime + Year +Year*post_2003 + factor(District), data=Panel_Data)
+cluster2505d <- cluster.vcov(Model2505d, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+CMREG2505d <- coeftest(Model2505d, cluster2505d)
 
 
-##Cumulative Forest Loss, treatment is project count within 100km,Thresh=10
+##Cumulative Forest Loss, treatment is cumulative project count within 100km,Thresh=10
 
 Model400 <- lm(Forest_Loss_additive ~ ProjCnt100_additive + PreLevelControl + PreTrendControl + 
                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
@@ -105,7 +126,7 @@ Model400 <- lm(Forest_Loss_additive ~ ProjCnt100_additive + PreLevelControl + Pr
 cluster400 <- cluster.vcov(Model400, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG400 <- coeftest(Model400, cluster400)
 
-Model500 <- lm(Forest_Loss_additive ~ ProjCnt100 + 
+Model500 <- lm(Forest_Loss_additive ~ ProjCnt100_additive + 
                PreLevelControl + PreTrendControl + MinTemp + MaxTemp + MeanTemp + 
                MaxPrecip + MeanPrecip + MinPrecip + 
                Elevation + Slope + UrbTravTime + Year + Year*post_2003 + factor(District), data=Panel_Data)
@@ -150,15 +171,32 @@ CMREG152 <- coeftest(Model152, cluster152)
 #Stargazer#
 #-------------------------#
 
+stargazer(Panel_Data,type="html", 
+          keep=c("Forest_Loss_additive","DecayYr_additive","Control","MinTemp","MinPrecip",
+                 "Max","Mean","Elevation","Slope","UrbTravTime","RivDist","RoadDist","ProjCnt100",
+                 "DecayYr100_additive","DecayYr25_additive"))
+
+
 stargazer(CMREG1, CMREG4, type="html", keep=c("Forest_Loss","additive","Control","Min","Max","Elevation","Slope","Year"))
 
-stargazer(CMREG1, CMREG1.1, CMREG2, CMREG3, CMREG4, CMREG5,
+stargazer(CMREG1, CMREG1.1, CMREG5, CMREG4,
           type="html", align=TRUE,
           keep=c("Forest_Loss","additive","Control","Min","Max","Mean","Year","Elevation","Slope","UrbTravTime","Post"),
           omit.stat=c("f","ser"),
-          add.lines=list(c("District Fixed Effects?","No","No","No","Yes","Yes","Yes"),
-                         c("Year Fixed Effects?","No","No","No","No","Yes","No")),
+          add.lines=list(c("Observations","58,996","58,996","58,996","58,996"),
+                         c("District Fixed Effects?","No","No","Yes","Yes"),
+                         c("Year Fixed Effects?","No","No","No","Yes")),
           title="Cambodia Infra Regression Results",
+          dep.var.labels=c("Cumulative Forest Loss"))
+
+stargazer(CMREG500, CMREG400, CMREG105d, CMREG104d,CMREG2505d, CMREG2504d,
+          type="html", align=TRUE,
+          keep=c("Forest_Loss","additive","Control","Min","Max","Mean","Year","Elevation","Slope","UrbTravTime","Post"),
+          omit.stat=c("f","ser"),
+          add.lines=list(c("Observations","58,996","58,996","58,996","58,996","58,996","58,996"),
+                         c("District Fixed Effects?","Yes","Yes","Yes","Yes","Yes","Yes"),
+                         c("Year Fixed Effects?","No","Yes","No","Yes","No","Yes")),
+          title="Cambodia Infra Regression Results: Alternate Treatments",
           dep.var.labels=c("Cumulative Forest Loss"))
 
 stargazer(CMREG400, CMREG500, CMREG51, CMREG52, CMREG151, CMREG152,

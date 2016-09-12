@@ -10,6 +10,11 @@ library(gridExtra)
 require(grid)
 library(multiwayvcov)
 library(lmtest)
+library(devtools)
+library(reshape)
+devtools::install_github("itpir/SAT@master")
+library(SAT)
+loadLibs()
 
 #---------------------------------------------------#
 #Settings
@@ -89,8 +94,8 @@ Mac_spdf <- Mac_sector
 Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
 
-write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia.csv")
-writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia.shp")
+#write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia.csv")
+#writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia.shp")
 
 #--------------------------------------------------#
 #Create threshdolded forest datasets
@@ -156,7 +161,7 @@ AOI_cells2 <- AOI_cells[!(is.na(AOI_cells@data$thresh_avgDist)),]
 AOI_cellsBack <- AOI_cells
 AOI_cells <- AOI_cells2
 
-writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_Cambodia.shp")
+#writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_Cambodia.shp")
 
 #--------------------------------------------------#
 #Calculate the over-time treatment effects
@@ -550,5 +555,102 @@ for(i in 1:length(Panel_Data[[1]]))
   Panel_Data["PreTrendControl"][i,] <- pre_trend_func(AOI_cells@data, Panel_Data[i,]["ID"][[1]])
 }
 
+#-------------------------------------------------
+#Add in additional data directly into panel dataset from SEAcells#
+#Population, Plantation, Baseline Protected Areas, Baseline Concessions#
+#-------------------------------------------------
 
-write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
+##Add in baseline protected area data, for pre-2001 and for pre-2004 since no projects in Cambodia until 2004
+pa_2000 <- read.csv("/home/aiddata/Desktop/Github/MacArthur/ProtectedAreas_Data/merge_sea_grid_pre2001.csv")
+pa_2003 <- read.csv("/home/aiddata/Desktop/Github/MacArthur/ProtectedAreas_Data/merge_sea_grid_wdpa_pre2004.csv")
+#Create new column with percentage of cell covered by protected area
+pa_2000$wdpapct_2000 <- NA
+pa_2000$wdpapct_2000 <- pa_2000$wdpa_pre2001_sea.na.sum/pa_2000$wdpa_pre2001_sea.na.count
+
+pa_2003$wdpapct_2003 <- NA
+pa_2003$wdpapct_2003 <- pa_2003$wdpa_pre2004_sea.na.sum/pa_2003$wdpa_pre2004_sea.na.count 
+#Merge percentage of cell covered by protected area into SEA cell dataset for pre2001 and pre2004, drop out the sum and count columns
+SEAcells<-merge(pa_2000,pa_2003,by.x="ID",by.y="ID")
+SEAcells <- SEAcells[,-grep("(sea)", names(SEAcells))]
+
+##Add in ODC concessions data, get percentage baseline in 2003 and percentage for all concessions in dataset regardless of year
+con <- read.csv("/home/aiddata/Desktop/Github/MacArthur/ODCConcessions_CambodiaExtract/merge_sea_grid.csv")
+#create percentage of cell covered by all concessions in dataset
+con$concessionpct_all<-NA
+con$concessionpct_all<- con$concessions.na.sum/con$concessions.na.count
+#create percentage of cell covered by all concessions in dataset dated to pre-2004
+con$concessionpct_2003<-NA
+con$concessionpct_2003<-con$concessions_subset.na.sum/con$concessions_subset.na.count
+#drop unused variables and merge into SEAcells
+con <- con[,-grep("(na)", names(con))]
+SEAcells<-merge(SEAcells,con,by.x="ID",by.y="ID")
+
+## Add in Global Forest Watch Plantation Data, 2013-2014
+gfw <- read.csv("/home/aiddata/Desktop/Github/MacArthur/GFWPlantation_Extracts/merge_sea_grid.csv")
+#create percentage of cell covered by all plantations in dataset (121 is the max number of grids in a 5km cell)
+gfw$plantation_pct<-NA
+gfw$plantation_pct<-gfw$gfw_plantations_sea.na.sum/121
+#drop unused variables and merge into SEAcells
+gfw <- gfw[,-grep("(sea)",names(gfw))]
+SEAcells<- merge(SEAcells,gfw,by.x="ID",by.y="ID")
+
+#merge SEAcells into Panel_Data
+Panel_Data_add <- Panel_Data
+Panel_Data_add<-merge(Panel_Data_add,SEAcells, by.x="ID",by.y="ID")
+
+## Add in GPW4 Pop Density Data, updated data for 2000,2005,2010,2015
+pop <- read.csv("/home/aiddata/Desktop/Github/MacArthur/GPW4_Extracts/merge_sea_grid.csv")
+Panel_Data_add<-merge(Panel_Data_add,pop,by.x="ID",by.y="ID")
+#Apply 2000 values to years 2001-2004 of Panel_Data, 2005 values to years 2005-2009, 2010 values to years 2010-2014
+Panel_Data_add$Pop<-NA
+Panel_Data_add$Pop[Panel_Data_add$Year<=2014]<-Panel_Data_add$gpw_v4_density.2010.mean[Panel_Data_add$Year<=2014]
+Panel_Data_add$Pop[Panel_Data_add$Year<=2009]<-Panel_Data_add$gpw_v4_density.2005.mean[Panel_Data_add$Year<=2009]
+Panel_Data_add$Pop[Panel_Data_add$Year<=2004]<-Panel_Data_add$gpw_v4_density.2000.mean[Panel_Data_add$Year<=2004]
+#Maintain Pop_2000 for baseline value
+names(Panel_Data_add)[names(Panel_Data_add)=="gpw_v4_density.2000.mean"]="Pop_2000"
+
+
+##create ntl panel dataset that matches 2001-2014 years of Panel_Data to merge into main dataset
+source("SciClone_functions.R")
+ntl2013<-read.csv("/home/aiddata/Desktop/Github/MacArthur/ntl_extracts/merge_sea_grid_2013.csv")
+# get pre-trends for creation of imputed NTL_2014 values (ntl still in ncc4_1992e name format)
+#requires shape file with ntl 1992 to 2012 data, then need to merge in 2013 ntl data
+AOI_cells_ntl<-AOI_cells[c(1:102)]
+AOI_cells_ntl<-merge(AOI_cells_ntl,ntl2013,by.x="ID",by.y="ID")
+names(AOI_cells_ntl)[names(AOI_cells_ntl)=="v4composites_calibrated.2013.mean"]="ncc4_2013e"
+#create five year trend to impute 2014 value
+AOI_cells_ntl$ntltrend_0913<-timeRangeTrend(AOI_cells_ntl,"ncc4_[0-9][0-9][0-9][0-9]e",2009,2013,"ID","y")
+AOI_cells_ntl@data$ncc4_2014e<-NA
+AOI_cells_ntl@data$ncc4_2014e=AOI_cells_ntl@data$ncc4_2013e+AOI_cells_ntl@data$ntltrend_0913
+AOI_cells_ntl@data$neg2014[AOI_cells_ntl@data$ncc4_2014e<0]<-1
+AOI_cells_ntl@data$ncc4_2014e[AOI_cells_ntl@data$neg2014==1]<-0
+#create ntl pre-trend for 1992-2003
+AOI_cells_ntl$ntl_pretrend<-timeRangeTrend(AOI_cells_ntl,"ncc4_[0-9][0-9][0-9][0-9]e",1992,2003,"ID","y")
+#create non-shape file and rename to something obvious
+ntl<-AOI_cells_ntl@data
+for (i in 2:length(ntl)) {
+  
+  if (substr(colnames(ntl)[i], 1, 4) == "ncc4"){
+    
+    name = "NTL"
+    year = substr(colnames(ntl)[i], 6, 9)
+    dt = paste(name,"_",year,sep="")
+    colnames(ntl)[i] <- dt
+  }
+}
+
+#convert it from wide to long form and reshape into panel
+ntl_late<-ntl[c(1,82:105,107)]
+ntl_long <- grep("NTL", names(ntl_late))
+ntl_reshape <- c(ntl_long)
+ntl_panel <- reshape(ntl_late, varying=ntl_reshape,direction="long", idvar="ID", sep="_", timevar="Year")
+ntl_panel$NTL_2003<-ntl_panel$NTL[ntl_panel$Year==2003]
+#merge into Panel_Data_add
+Panel_Data_add1<-merge(Panel_Data_add,ntl_panel,by=c("ID","Year"))
+
+Panel_Data_add<-Panel_Data_add1
+
+#write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
+write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_panel_data_add.csv")
+Panel_Data<-read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
+

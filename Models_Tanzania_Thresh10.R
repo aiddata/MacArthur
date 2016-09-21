@@ -15,8 +15,9 @@ library(lmtest)
 ##Load panel datasets
 Panel_Data_infra <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
 Panel_Data_infra_add <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add.csv")
-Panel_Data_infra <- Panel_Data_infra_add
-Panel_Data_soc <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc.csv")
+Panel_Data_infra_add_aug<- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv") 
+Panel_Data_infra <- Panel_Data_infra_add_aug
+Panel_Data_soc <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc_AUG.csv")
 
 ## Subset social sector panel data and rename columns to prepare for merge
 Panel_Data_soc=Panel_Data_soc[,c("ID","Year","MinYr","DecayYr","DecayYr_additive",
@@ -138,13 +139,13 @@ Panel_Data07<-Panel_Data07[Panel_Data07$Forest_Loss_additive==Panel_Data07$Fores
 
 ##Panel Data, Thresh=5
 
-Panel_Data_5 <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_Thresh5.csv")
+#Panel_Data_5 <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_Thresh5.csv")
 
 
 
 ##Panel Data, Thresh=15
 
-Panel_Data_15<- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_Thresh15.csv")
+#Panel_Data_15<- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_Thresh15.csv")
 
 
 
@@ -166,22 +167,30 @@ Model1.1<- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl, data=Pa
 cluster1.1 <- cluster.vcov(Model1.1, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG1.1 <- coeftest(Model1.1, cluster1.1)
 
-# Model2 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl + 
-#                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-#                UrbTravTime, data=Panel_Data)
-# cluster2 <- cluster.vcov(Model2, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
-# CMREG2 <- coeftest(Model2, cluster2)
-# 
-# Model3 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl + 
-#                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-#                UrbTravTime + UrbTravTime*DecayYr_additive + factor(District), data=Panel_Data)
-# cluster3 <- cluster.vcov(Model3, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
-# CMREG3 <- coeftest(Model3, cluster3)
+Model2 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl +
+             MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope +
+             UrbTravTime + 
+             ntl_pretrend + 
+             Pop +
+             factor(District),   
+             data=Panel_Data)
+cluster2 <- cluster.vcov(Model2, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+CMREG2 <- coeftest(Model2, cluster2)
+
+Model3 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl +
+              MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope +
+              UrbTravTime + 
+              ntl_pretrend + 
+              Pop +
+              factor(District) + factor(Year),   
+              data=Panel_Data)
+cluster3 <- cluster.vcov(Model3, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
+CMREG3 <- coeftest(Model3, cluster3)
 
 Model4 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl + 
                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-               UrbTravTime + Pop_2000 + 
-               ntl_pretrend + NTL_2007+
+               UrbTravTime + 
+               ntl_pretrend +
                Pop + DecayYr_additive*Pop+
                factor(Year) + factor(District), data=Panel_Data)
 cluster4 <- cluster.vcov(Model4, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
@@ -191,26 +200,29 @@ Model5 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLeve
                MinTemp + MaxTemp + MeanTemp + 
                MaxPrecip + MeanPrecip + MinPrecip + 
                Elevation + Slope + 
-               UrbTravTime + Pop_2000 +
-               ntl_pretrend + NTL_2007+
-               Year + Year*post_2007 + factor(District), data=Panel_Data)
+               UrbTravTime + 
+               ntl_pretrend +
+               Pop+
+               wdpapct_2007 + DecayYr_additive*wdpapct_2007+
+               factor(Year) + factor(District), data=Panel_Data)
 cluster5 <- cluster.vcov(Model5, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG5 <- coeftest(Model5, cluster5)
 
 Model6 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl + 
                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-               UrbTravTime + Pop_2000 + 
-               ntl_pretrend + NTL_2007 +
+               UrbTravTime  + 
+               ntl_pretrend +
+               Pop + DecayYr_additive*Pop +
                wdpapct_2007 + DecayYr_additive*wdpapct_2007+ 
-               factor(Year) + factor(District), data=Panel_Data)
+               Year + Year*post_2007 + factor(District), data=Panel_Data)
 cluster6<-cluster.vcov(Model6,cbind(Panel_Data$Year,Panel_Data$District), force_posdef=TRUE)
 CMREG6 <- coeftest(Model6,cluster6)
 
 
 Model9 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl + 
                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-               UrbTravTime + Pop_2000 + 
-               ntl_pretrend + NTL_2007 +
+               UrbTravTime  + 
+               ntl_pretrend  +
                Pop + DecayYr_additive*Pop +
                wdpapct_2007 + DecayYr_additive*wdpapct_2007+
                factor(Year) + factor(District), data=Panel_Data)
@@ -218,19 +230,21 @@ cluster9<-cluster.vcov(Model9,cbind(Panel_Data$Year,Panel_Data$District), force_
 CMREG9 <- coeftest(Model9,cluster9)
 
 Model10 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl + 
-                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-                UrbTravTime + Pop_2000 + 
-                NTL +
-                Pop + DecayYr_additive*Pop +
-                wdpapct_2007 + DecayYr_additive*wdpapct_2007+
-                factor(Year) + factor(District), data=Panel_Data)
+               MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+               UrbTravTime + 
+               ntl_pretrend + 
+               Pop + DecayYr_additive*Pop +
+               wdpapct_2007 + DecayYr_additive*wdpapct_2007+
+               NTL+
+               factor(Year) + factor(District), data=Panel_Data)
 cluster10<-cluster.vcov(Model10,cbind(Panel_Data$Year,Panel_Data$District), force_posdef=TRUE)
 CMREG10 <- coeftest(Model10,cluster10)
 
+
 Model11 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl + 
                 MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-                UrbTravTime + Pop_2000 + 
-                ntl_pretrend + NTL_2007 +
+                UrbTravTime  + 
+                ntl_pretrend  +
                 Pop + DecayYr_additive*Pop +
                 wdpapct_2007 + DecayYr_additive*wdpapct_2007+
                 treat_minus1 + treat_minus2+treat_minus3+treat_minus4+treat_minus5+
@@ -240,11 +254,12 @@ CMREG11 <- coeftest(Model11,cluster11)
 
 Model12 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLevelControl + PreTrendControl + 
                 MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-                UrbTravTime + Pop_2000 + 
-                ntl_pretrend + NTL_2007 + NTL+
+                UrbTravTime +  
+                ntl_pretrend +
                 Pop + DecayYr_additive*Pop +
                 wdpapct_2007 + DecayYr_additive*wdpapct_2007+
                 treat_minus1 + treat_minus2+treat_minus3+treat_minus4+treat_minus5+
+                NTL+
                 factor(Year) + factor(District), data=Panel_Data_trtlag)
 cluster12<-cluster.vcov(Model12,cbind(Panel_Data_trtlag$Year,Panel_Data_trtlag$District), force_posdef=TRUE)
 CMREG12 <- coeftest(Model12,cluster12)
@@ -262,29 +277,40 @@ CMREG1.1s <- coeftest(Model1.1s, cluster1.1s)
 
 Model2s <- lm(Forest_Loss_additive ~ DecayYr_additive_soc + DecayAddControl_soc + PreLevelControl + PreTrendControl + 
                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-               UrbTravTime, data=Panel_Data)
+               UrbTravTime +
+                ntl_pretrend+
+                Pop+
+                factor(District),
+              data=Panel_Data)
 cluster2s <- cluster.vcov(Model2s, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG2s <- coeftest(Model2s, cluster2s)
 
+
 Model3s <- lm(Forest_Loss_additive ~ DecayYr_additive_soc + DecayAddControl_soc + PreLevelControl + PreTrendControl + 
                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-               UrbTravTime + factor(District), data=Panel_Data)
+               UrbTravTime +
+                ntl_pretrend+
+                Pop+
+                factor(Year) + factor(District), data=Panel_Data)
 cluster3s <- cluster.vcov(Model3s, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG3s <- coeftest(Model3s, cluster3s)
 
 Model4s <- lm(Forest_Loss_additive ~ DecayYr_additive_soc + DecayAddControl_soc + PreLevelControl + PreTrendControl + 
                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
-               UrbTravTime + Pop_2000 +
-               ntl_pretrend + NTL_2007+
+               UrbTravTime  +
+               ntl_pretrend +
                Pop + DecayYr_additive_soc*Pop +
                factor(Year) + factor(District), data=Panel_Data)
 cluster4s <- cluster.vcov(Model4s, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG4s <- coeftest(Model4s, cluster4s)
 
-Model5s <- lm(Forest_Loss_additive ~ DecayYr_additive_soc + DecayAddControl_soc + 
-               PreLevelControl + PreTrendControl + MinTemp + MaxTemp + MeanTemp + 
-               MaxPrecip + MeanPrecip + MinPrecip + 
-               Elevation + Slope + UrbTravTime + Year + Year*post_2007 + factor(District), data=Panel_Data)
+Model5s <- lm(Forest_Loss_additive ~ DecayYr_additive_soc + DecayAddControl_soc + PreLevelControl + PreTrendControl + 
+                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                UrbTravTime + 
+                ntl_pretrend+
+                Pop+
+                wdpapct_2007 + DecayYr_additive_soc*wdpapct_2007+
+                factor(Year) + factor(District), data=Panel_Data)
 cluster5s <- cluster.vcov(Model5s, cbind(Panel_Data$Year, Panel_Data$District), force_posdef=TRUE)
 CMREG5s <- coeftest(Model5s, cluster5s)
 
@@ -531,10 +557,18 @@ CMREG152 <- coeftest(Model152, cluster152)
 #Stargazer#
 #-------------------------#
 
+#WORKING PAPER SUMMARY STATS#
+#rename vars directly in html file
+#treatment
+stargazer(Panel_Data, type = "html", nobs = FALSE, mean.sd = TRUE, median = TRUE,
+          iqr = TRUE,
+          keep=c("Forest_Loss_additive","DecayYr_additive","DecayYr100_additive","ProjCnt100_additive",
+                 "DecayAddControl","DecayAddControl100"))
+#covars
 stargazer(Panel_Data,type="html", 
-          keep=c("Forest_Loss_additive","DecayYr_additive","Control","MinTemp","MinPrecip",
-                 "Max","Mean","Elevation","Slope","UrbTravTime","RivDist","RoadDist","ProjCnt100",
-                 "DecayYr100_additive","DecayYr25_additive"))
+          keep=c("MinTemp","MinPrecip","Max","Mean","Elevation","Slope","UrbTravTime","ntl_pretrend","NTL",
+                 "Pop","Pct","PreLevelControl","PreTrendControl"))
+
 
 stargazer(CMREG1, CMREG4, type="html", 
           keep=c("Forest_Loss","additive","Control","Min","Max","Elevation","Slope","Year"))
@@ -549,14 +583,23 @@ stargazer(CMREG1, CMREG1.1, CMREG5,CMREG4,
           title="Tanzania Infra Regression Results",
           dep.var.labels=c("Cumulative Forest Loss"))
 
-stargazer(CMREG4,CMREG6,CMREG9,CMREG10,CMREG11,CMREG12,
+#WORKING PAPER RESULTS TABLE#
+#have to take out automatically inserted "factor" lines directly in html
+stargazer(CMREG1, CMREG1.1, CMREG2, CMREG3,CMREG9,CMREG10,
           type="html", align=TRUE,
           omit=c("factor","Temp","Precip"),omit.labels=c("factor","Temp","Precip"),
           omit.stat=c("f","ser"),
-          # add.lines=list(c("Observations","58,996","58,996","58,996","58,996"),
-          #                c("District Fixed Effects?","No","No","Yes","Yes"),
-          #                c("Year Fixed Effects?","No","No","No","Yes")),
-          title="Tanzania Infra Regression Results",
+          covariate.labels=c("Treatment (Proximity)","Proximity Control","Baseline NDVI","NDVI Pre-Trend",
+                             "Elevation","Slope",
+                             "Urban Travel Time","Nighttime Lights Pre-Trend","Population",
+                             "Baseline Protected Areas",
+                             "Nighttime Lights",
+                             "Population*Treatment","Protected Area*Treatment"),
+          add.lines=list(c("Observations","315,028","315,028","315,028","315,028","315,028","315,028","315,028"),
+                         c("Climate Controls?","No","No","Yes","Yes","Yes","Yes"),
+                         c("District Fixed Effects?","No","No","Yes","Yes","Yes","Yes"),
+                         c("Year Fixed Effects?","No","No","No","Yes","Yes","Yes")),
+          title="Tanzania Infrastructure Regression Results",
           dep.var.labels=c("Cumulative Forest Loss"))
 
 stargazer(CMREG4s,CMREG6s,CMREG9s,CMREG10s,CMREG11s,CMREG12s,

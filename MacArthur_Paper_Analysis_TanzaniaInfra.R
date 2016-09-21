@@ -84,12 +84,12 @@ Mac_spdf <- Mac_prec
 Mac_sector <- Mac_spdf[Mac_spdf@data$crs_sector_code%in%c("210","220","230","320"),]
 Mac_spdf <- Mac_sector
 #Subset by status = implementation or completion (not pipeline)
-Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
+Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3","11"),]
 Mac_spdf <- Mac_status
-#Take out sector 160 projects that aren't building infrastructure
-Mac_160<- Mac_spdf[Mac_spdf@data$project_id!="33053",]
-Mac_160<- Mac_160[Mac_160@data$project_id!="1919",]
-Mac_spdf <- Mac_160
+# #Take out sector 160 projects that aren't building infrastructure
+# Mac_160<- Mac_spdf[Mac_spdf@data$project_id!="33053",]
+# Mac_160<- Mac_160[Mac_160@data$project_id!="1919",]
+# Mac_spdf <- Mac_160
 
 write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaInfra.csv")
 writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Tanzania.shp")
@@ -516,7 +516,7 @@ for(i in 1:length(Panel_Data[[1]]))
   Panel_Data["PreTrendControl"][i,] <- pre_trend_func(AOI_cells@data, Panel_Data[i,]["ID"][[1]])
 }
 
-
+write.csv(Panel_Data,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_AUG.csv")
 #-------------------------------------------------
 #Add in additional data directly into panel dataset from AFRcells#
 #Population, Baseline Protected Areas, Nighttime Lights#
@@ -565,7 +565,7 @@ AOI_cells_ntl@data$ncc4_2014e=AOI_cells_ntl@data$ncc4_2013e+AOI_cells_ntl@data$n
 AOI_cells_ntl@data$neg2014[AOI_cells_ntl@data$ncc4_2014e<0]<-1
 AOI_cells_ntl@data$ncc4_2014e[AOI_cells_ntl@data$neg2014==1]<-0
 #create ntl pre-trend for 1992-2003
-AOI_cells_ntl$ntl_pretrend<-timeRangeTrend(AOI_cells_ntl,"ncc4_[0-9][0-9][0-9][0-9]e",1992,2003,"ID","y")
+AOI_cells_ntl$ntl_pretrend<-timeRangeTrend(AOI_cells_ntl,"ncc4_[0-9][0-9][0-9][0-9]e",1992,2007,"ID","y")
 #create non-shape file and rename to something obvious
 ntl<-AOI_cells_ntl@data
 for (i in 2:length(ntl)) {
@@ -594,6 +594,6 @@ Panel_Data_add<-Panel_Data_add1
 
 
 #write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
-Panel_Data<-read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
-write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add.csv")
+#Panel_Data<-read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
+write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
 

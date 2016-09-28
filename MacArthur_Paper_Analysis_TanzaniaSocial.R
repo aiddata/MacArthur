@@ -512,7 +512,7 @@ for(i in 1:length(Panel_Data[[1]]))
   Panel_Data["PreTrendControl"][i,] <- pre_trend_func(AOI_cells@data, Panel_Data[i,]["ID"][[1]])
 }
 
-write.csv(Panel_Data,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc_AUG.csv")
+write.csv(Panel_Data,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc_ONLY_AUG.csv")
 #write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc.csv")
 
 

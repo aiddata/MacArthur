@@ -14,7 +14,7 @@ library(lmtest)
 library(pastecs)
 
 ##Panel Data, Thresh=10
-Panel_Data <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
+#Panel_Data <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
 Panel_Data_add <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_panel_data_add.csv")
 Panel_Data<-Panel_Data_add
 
@@ -56,6 +56,23 @@ Panel_Data$treat_minus5[Panel_Data$Year>=2010]<-NA
 
 Panel_Data_trtlag <- Panel_Data[Panel_Data$Year<=2009,]
 
+#Create data subset for each year with treatment lead (i.e. take out one year of dataset at a time) and rename variables to make stargazer easier
+Panel_Data_trtlag13 <- Panel_Data[Panel_Data$Year<=2013,]
+names(Panel_Data_trtlag13)[names(Panel_Data_trtlag13) == "treat_minus1"] = "trtlead"
+
+Panel_Data_trtlag12 <- Panel_Data[Panel_Data$Year<=2012,]
+names(Panel_Data_trtlag12)[names(Panel_Data_trtlag12) == "treat_minus2"] = "trtlead"
+
+Panel_Data_trtlag11 <- Panel_Data[Panel_Data$Year<=2011,]
+names(Panel_Data_trtlag11)[names(Panel_Data_trtlag11) == "treat_minus3"] = "trtlead"
+
+Panel_Data_trtlag10 <- Panel_Data[Panel_Data$Year<=2010,]
+names(Panel_Data_trtlag10)[names(Panel_Data_trtlag10) == "treat_minus4"] = "trtlead"
+
+names(Panel_Data_trtlag)[names(Panel_Data_trtlag) == "treat_minus5"] = "trtlead"
+
+
+
 # Panel_Data_test <- Panel_Data
 # Panel_Data_test=Panel_Data_test[Panel_Data_test$MinYr!=0,]
 # min <- aggregate(MinYr ~ ID, Panel_Data_test, function(x) min(x))
@@ -83,6 +100,13 @@ Panel_Data_15<- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambo
 #Add Post-2003 indicator
 Panel_Data_15$post_2003<-0
 Panel_Data_15$post_2003[Panel_Data_15$Year>2003]<-1
+
+##Panel Data, Thresh=10, only cells with Chinese activities within 100km
+Panel_Data_100<-Panel_Data[Panel_Data$DecayAddControl100!=0,]
+
+## Panel_Data, Thresh=10, only cells with Chinese activities within 25km
+Panel_Data_25<-Panel_Data[Panel_Data$DecayAddControl25!=0,]
+
 
 #--------------------------------------------------#
 #Modeling
@@ -209,6 +233,51 @@ Model12 <- lm(Forest_Loss_additive ~ DecayYr_additive + DecayAddControl + PreLev
                 factor(Year) + factor(District), data=Panel_Data_trtlag)
 cluster12<-cluster.vcov(Model12,cbind(Panel_Data_trtlag$Year,Panel_Data_trtlag$District), force_posdef=TRUE)
 CMREG12 <- coeftest(Model12,cluster12)
+
+Model13 <- lm(Forest_Loss_additive ~ trtlead+ DecayAddControl + PreLevelControl + PreTrendControl + 
+                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                UrbTravTime +  
+                ntl_pretrend +
+                Pop + wdpapct_2003 + concessionpct_2003 + plantation_pct+
+                factor(Year) + factor(District), data=Panel_Data_trtlag13)
+cluster13<-cluster.vcov(Model13,cbind(Panel_Data_trtlag13$Year,Panel_Data_trtlag13$District), force_posdef=TRUE)
+CMREG13 <- coeftest(Model13,cluster13)
+
+Model14 <- lm(Forest_Loss_additive ~ trtlead+ DecayAddControl+PreLevelControl + PreTrendControl + 
+                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                UrbTravTime +  
+                ntl_pretrend +
+                Pop + wdpapct_2003 + concessionpct_2003 + plantation_pct+
+                factor(Year) + factor(District), data=Panel_Data_trtlag12)
+cluster14<-cluster.vcov(Model14,cbind(Panel_Data_trtlag12$Year,Panel_Data_trtlag12$District), force_posdef=TRUE)
+CMREG14 <- coeftest(Model14,cluster14)
+
+Model15 <- lm(Forest_Loss_additive ~ trtlead+ DecayAddControl+PreLevelControl + PreTrendControl + 
+                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                UrbTravTime +  
+                ntl_pretrend +
+                Pop + wdpapct_2003 + concessionpct_2003 + plantation_pct+
+                factor(Year) + factor(District), data=Panel_Data_trtlag11)
+cluster15<-cluster.vcov(Model15,cbind(Panel_Data_trtlag11$Year,Panel_Data_trtlag11$District), force_posdef=TRUE)
+CMREG15 <- coeftest(Model15,cluster15)
+
+Model16 <- lm(Forest_Loss_additive ~ trtlead+DecayAddControl+ PreLevelControl + PreTrendControl + 
+                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                UrbTravTime +  
+                ntl_pretrend +
+                Pop + wdpapct_2003 + concessionpct_2003 + plantation_pct+
+                factor(Year) + factor(District), data=Panel_Data_trtlag10)
+cluster16<-cluster.vcov(Model16,cbind(Panel_Data_trtlag10$Year,Panel_Data_trtlag10$District), force_posdef=TRUE)
+CMREG16 <- coeftest(Model16,cluster16)
+
+Model17 <- lm(Forest_Loss_additive ~ trtlead+ DecayAddControl +PreLevelControl + PreTrendControl + 
+                MinTemp + MaxTemp + MeanTemp + MaxPrecip + MeanPrecip + MinPrecip + Elevation + Slope + 
+                UrbTravTime +  
+                ntl_pretrend +
+                Pop + wdpapct_2003 + concessionpct_2003 + plantation_pct+
+                factor(Year) + factor(District), data=Panel_Data_trtlag)
+cluster17<-cluster.vcov(Model17,cbind(Panel_Data_trtlag$Year,Panel_Data_trtlag$District), force_posdef=TRUE)
+CMREG17 <- coeftest(Model17,cluster17)
 
 
 ##Cumulative Forest Loss, treatment is distance decay within 100km
@@ -339,39 +408,36 @@ stargazer(CMREG1, CMREG1.1, CMREG2,CMREG3, CMREG9, CMREG10,
           dep.var.labels=c("Cumulative Forest Loss"))
 
 #WORKING PAPER ROBUSTNESS CHECKS#
-stargazer(CMREG11, CMREG109d,CMREG2509d,CMREG900,CMREG59, CMREG159,
+stargazer(CMREG109d,CMREG2509d,CMREG900,CMREG59, CMREG159,
           type="html", align=TRUE,
           omit=c("factor","Temp","Precip","Elevation","Slope","UrbTravTime","ntl",
                  "PreLevelControl","PreTrendControl","Constant"),
           #order=c(5,6,1,2,3,4,7),
-          covariate.labels=c("Treatment (Proximity)","Proximity Control",
-                             "Treatment (Proximity, 100km)","100km Proximity Control",
+          covariate.labels=c("Treatment (Proximity, 100km)","100km Proximity Control",
                              "Treatment (Proximity, 25km)","25km Proximity Control",
                              "Treatment (100km Project Count)",
+                             "Treatment (Proximity)","Proximity Control",
                              "Pop","wdpa","conc","plant",
-                             "Treatment Lead (1 Year)","Treatment Lead (2 Year)","Treatment Lead (3 Year)","Treatment Lead (4 Year)","Treatment Lead (5 Year)",
-                             "Population*Treatment (Proximity)","Protected Area*Treatment (Proximity)","Concession*Treatment (Proximity)","Plantation*Treatment (Proximity)",
                              "Population*Treatment (100km Proximity)","Protected Area*Treatment (100km Proximity)","Concession*Treatment (100km Proximity)","Plantation*Treatment (100km Proximity)",
                              "Population*Treatment (25km Proximity)","Protected Area*Treatment (25km Proximity)","Concession*Treatment (25km Proximity)","Plantation*Treatment (25km Proximity)",
-                             "Population*Treatment (100km Count)","Protected Area*Treatment (100km Count)","Concession*Treatment (100km Count)","Plantation*Treatment (100km Count)"),
+                             "Population*Treatment (100km Count)","Protected Area*Treatment (100km Count)","Concession*Treatment (100km Count)","Plantation*Treatment (100km Count)",
+                             "Population*Treatment (Proximity)","Protected Area*Treatment (Proximity)","Concession*Treatment (Proximity)","Plantation*Treatment (Proximity)"),
           omit.stat=c("f","ser"),
-          add.lines=list(c("Observations","58,996","58,996","58,996","58,996","64,106","54,740"),
-                         c("Threshold=10","No","No","Yes","Yes","No","No"),
-                         c("Threshold=5","No","No","No","No","Yes","No"),
-                         c("Threshold=15","No","No","No","No","No","Yes")),
+          add.lines=list(c("Observations","58,996","58,996","58,996","64,106","54,740"),
+                         c("Standing Forest Threshold","10%","10%","10%","5%","15%")),
           title="Cambodia Infrastructure Regression Results: Robustness Checks",
           dep.var.labels=c("Cumulative Forest Loss"))
 
-
-stargazer(CMREG500, CMREG400, CMREG105d, CMREG104d,CMREG2505d, CMREG2504d,
-          type="html", align=TRUE,
-          keep=c("Forest_Loss","additive","Control","Min","Max","Mean","Year","Elevation","Slope","UrbTravTime","Post"),
+#Working Paper Infra Treatment Leads Table
+stargazer(CMREG13,CMREG14,CMREG15,CMREG16,CMREG17,
+          type="html",align=TRUE,
+          keep=c("trtlead"),
           omit.stat=c("f","ser"),
-          add.lines=list(c("Observations","58,996","58,996","58,996","58,996","58,996","58,996"),
-                         c("District Fixed Effects?","Yes","Yes","Yes","Yes","Yes","Yes"),
-                         c("Year Fixed Effects?","No","Yes","No","Yes","No","Yes")),
-          title="Cambodia Infra Regression Results: Alternate Treatments",
-          dep.var.labels=c("Cumulative Forest Loss"))
+          covariate.labels=c("Treatment Lead"),
+          column.labels=c("1 Year","2 Year","3 Year","4 Year","5 Year"),
+          add.lines=list(c("Observations","54,782","50,568","46,354","42,140","37,926")),
+          title="Cambodia Infrastructure Treatment Leads")
+
 
 
 #Scratch

@@ -84,11 +84,11 @@ Mac_spdf <- Mac_prec
 Mac_sector <- Mac_spdf[Mac_spdf@data$crs_sector_code%in%c("110","120","130"),]
 Mac_spdf <- Mac_sector
 #Subset by status = implementation or completion (not pipeline)
-Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3","11"),]
+Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
 
-write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaSoc.csv")
-writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaSoc.shp")
+#write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaSoc.csv")
+#writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaSoc.shp")
 
 #--------------------------------------------------#
 #Create threshdolded forest datasets
@@ -154,7 +154,7 @@ AOI_cells2 <- AOI_cells[!(is.na(AOI_cells@data$thresh_avgDist)),]
 AOI_cellsBack <- AOI_cells
 AOI_cells <- AOI_cells2
 
-writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_TanzaniaSoc.shp")
+#writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_TanzaniaSoc.shp")
 
 #--------------------------------------------------#
 #Calculate the over-time treatment effects
@@ -512,7 +512,7 @@ for(i in 1:length(Panel_Data[[1]]))
   Panel_Data["PreTrendControl"][i,] <- pre_trend_func(AOI_cells@data, Panel_Data[i,]["ID"][[1]])
 }
 
-write.csv(Panel_Data,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc_ONLY_AUG.csv")
+write.csv(Panel_Data,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc_ONLY_JUNE.csv")
 #write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc.csv")
 
 

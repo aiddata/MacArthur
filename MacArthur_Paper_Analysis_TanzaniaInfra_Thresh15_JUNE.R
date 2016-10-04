@@ -15,7 +15,7 @@ library(lmtest)
 #Settings
 #---------------------------------------------------#
 
-forest_thresh = 10
+forest_thresh = 15
 restrict_analysis = FALSE
 
 #---------------------------------------------------#
@@ -84,15 +84,15 @@ Mac_spdf <- Mac_prec
 Mac_sector <- Mac_spdf[Mac_spdf@data$crs_sector_code%in%c("210","220","230","320"),]
 Mac_spdf <- Mac_sector
 #Subset by status = implementation or completion (not pipeline)
-Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3","11"),]
+Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
 # #Take out sector 160 projects that aren't building infrastructure
 # Mac_160<- Mac_spdf[Mac_spdf@data$project_id!="33053",]
 # Mac_160<- Mac_160[Mac_160@data$project_id!="1919",]
 # Mac_spdf <- Mac_160
 
-write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaInfra.csv")
-writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Tanzania.shp")
+#write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaInfra_Thresh15.csv")
+#writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaInfra_Thresh15.shp")
 
 #--------------------------------------------------#
 #Create threshdolded forest datasets
@@ -122,9 +122,9 @@ minDistKm <- mean(col_mins) / 1000
 #--------------------------------------------------#
 #correlogram_data <- correlog(x = coordinates(AOI_cells)[,1], y = coordinates(AOI_cells)[,2], z=AOI_cells$lnyx_1999e, increment=5, latlon=TRUE, na.rm=TRUE, resamp=5)
 
-#save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
+#save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/tanz_correl_Thresh15.RData")
 
-load("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
+load("/home/aiddata/Desktop/Github/MacArthur/modelData/tanz_correl_Thresh15.RData")
 
 #save data into a function to calculate the distance-decay penalty later.
 #Chinese projects are "weighted" according to their distance.
@@ -140,9 +140,7 @@ cVals <- abs(correlogram_data$correlation)
 #--------------------------------------------------#
 #no weights, all before the first time X = 0 are counted.
 thresh_dMatrix <- dMatrix
-#thresh_dMatrix[thresh_dMatrix > (as.numeric(correlogram_data$x.intercept)*1000)] <- NA
-
-thresh_dMatrix[thresh_dMatrix >= 100000] <- NA
+thresh_dMatrix[thresh_dMatrix > (as.numeric(correlogram_data$x.intercept)*1000)] <- NA
 total_distance_km <- colSums(thresh_dMatrix, na.rm=TRUE) / 1000
 
 AOI_cells$thresh_tot_proj <- apply(thresh_dMatrix, 2, function(x) length(which(!is.na(x))))
@@ -160,7 +158,7 @@ AOI_cells2 <- AOI_cells[!(is.na(AOI_cells@data$thresh_avgDist)),]
 AOI_cellsBack <- AOI_cells
 AOI_cells <- AOI_cells2
 
-writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_Tanzania.shp")
+#writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_Tanzania_Thresh15.shp")
 
 #--------------------------------------------------#
 #Calculate the over-time treatment effects
@@ -518,13 +516,13 @@ for(i in 1:length(Panel_Data[[1]]))
   Panel_Data["PreTrendControl"][i,] <- pre_trend_func(AOI_cells@data, Panel_Data[i,]["ID"][[1]])
 }
 
-write.csv(Panel_Data,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_AUG.csv")
+write.csv(Panel_Data,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_Thresh15_JUNE.csv")
 #-------------------------------------------------
 #Add in additional data directly into panel dataset from AFRcells#
 #Population, Baseline Protected Areas, Nighttime Lights#
 #-------------------------------------------------
 
-##Add in baseline protected area data, for pre-2001 and for pre-2008 since no projects in Cambodia until 2008
+##Add in baseline protected area data, for pre-2001 and for pre-2008 since no projects in Tanzania until 2008
 pa_2000 <- read.csv("/home/aiddata/Desktop/Github/MacArthur/ProtectedAreas_Data/merge_africa_grid_pre2001.csv")
 pa_2007 <- read.csv("/home/aiddata/Desktop/Github/MacArthur/ProtectedAreas_Data/merge_africa_grid_wdpa_pre2008.csv")
 #Create new column with percentage of cell covered by protected area
@@ -597,5 +595,5 @@ Panel_Data_add<-Panel_Data_add1
 
 #write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
 #Panel_Data<-read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
-write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
+write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_Thresh15_JUNE.csv")
 

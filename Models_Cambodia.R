@@ -16,6 +16,7 @@ library(pastecs)
 ##Panel Data, Thresh=10
 #Panel_Data <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
 Panel_Data_add <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_panel_data_add.csv")
+Panel_Data_add <-read.csv("/Users/rbtrichler/Downloads/rstudio-export_essential/modelData/cambodia_panel_data_add.csv")
 Panel_Data<-Panel_Data_add
 
 #Add Post-2003 indicator

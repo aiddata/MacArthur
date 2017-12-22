@@ -10,6 +10,7 @@ library(gridExtra)
 require(grid)
 library(multiwayvcov)
 library(lmtest)
+library(reshape2)
 
 #---------------------------------------------------#
 #Settings
@@ -549,9 +550,10 @@ Panel_Data_add <- Panel_Data
 Panel_Data_add<-merge(Panel_Data_add,AFRcells, by.x="ID",by.y="ID")
 
 ## Add in GPW4 Pop Density Data, updated data for 2000,2005,2010,2015
-pop <- read.csv("/home/aiddata/Desktop/Github/MacArthur/GPW4_Extracts/merge_africa_grid.csv")
+pop <- read.csv(paste(active_dir_path,"/GPW4_Extracts/merge_africa_grid.csv",sep=""))
 Panel_Data_add<-merge(Panel_Data_add,pop,by.x="ID",by.y="ID")
 #Apply 2000 values to years 2001-2004 of Panel_Data, 2005 values to years 2005-2009, 2010 values to years 2010-2014
+#create it in panel form with variable name Pop
 Panel_Data_add$Pop<-NA
 Panel_Data_add$Pop[Panel_Data_add$Year<=2014]<-Panel_Data_add$gpw_v4_density.2010.mean[Panel_Data_add$Year<=2014]
 Panel_Data_add$Pop[Panel_Data_add$Year<=2009]<-Panel_Data_add$gpw_v4_density.2005.mean[Panel_Data_add$Year<=2009]
@@ -559,42 +561,52 @@ Panel_Data_add$Pop[Panel_Data_add$Year<=2004]<-Panel_Data_add$gpw_v4_density.200
 #Maintain Pop_2000 for baseline value
 names(Panel_Data_add)[names(Panel_Data_add)=="gpw_v4_density.2000.mean"]="Pop_2000"
 
-##create ntl panel dataset that matches 2001-2014 years of Panel_Data to merge into main dataset
+
+##merge in updated dmsp ntl that matches 2001-2014 years of Panel_Data to merge into main dataset
+#original ntl data that was merged in was incorrect, new ntl data merged in oct 2017
+#read in nighttime lights data and rename columns 
 source("SciClone_functions.R")
-ntl2013<-read.csv("/home/aiddata/Desktop/Github/MacArthur/ntl_extracts/merge_africa_grid_2013.csv")
-# get pre-trends for creation of imputed NTL_2014 values (ntl still in ncc4_1992e name format)
-#requires shape file with ntl 1992 to 2012 data, then need to merge in 2013 ntl data
-AOI_cells_ntl<-AOI_cells[c(1:102)]
-AOI_cells_ntl<-merge(AOI_cells_ntl,ntl2013,by.x="ID",by.y="ID")
-names(AOI_cells_ntl)[names(AOI_cells_ntl)=="v4composites_calibrated.2013.mean"]="ncc4_2013e"
-#create five year trend to impute 2014 value
-AOI_cells_ntl$ntltrend_0913<-timeRangeTrend(AOI_cells_ntl,"ncc4_[0-9][0-9][0-9][0-9]e",2009,2013,"ID","y")
-AOI_cells_ntl@data$ncc4_2014e<-NA
-AOI_cells_ntl@data$ncc4_2014e=AOI_cells_ntl@data$ncc4_2013e+AOI_cells_ntl@data$ntltrend_0913
-AOI_cells_ntl@data$neg2014[AOI_cells_ntl@data$ncc4_2014e<0]<-1
-AOI_cells_ntl@data$ncc4_2014e[AOI_cells_ntl@data$neg2014==1]<-0
+ntl<- read.csv(paste(active_dir_path,"/ntl_extracts/merge_africa_grid2.csv",sep=""))
+colnames(ntl)<-sub("v4composites_calibrated_201709.","ntl_",colnames(ntl))
+colnames(ntl)<-gsub(".mean","",colnames(ntl))
+#create five year trend from 2009-2013 to impute 2014 value (to match years 2001-2014)
+#uses timeRangeTrend from SCI which doesn't work for data.frame format
+AOI_cells_ntl<-AOI_cells[1]
+AOI_cells_ntl<-merge(AOI_cells_ntl,ntl,by.x="ID",by.y="ID")
+AOI_cells_ntl$ntltrend_0913<-timeRangeTrend(AOI_cells_ntl,"ntl_[0-9][0-9][0-9][0-9]",2009,2013,"ID")
+
+AOI_cells_ntl@data$ntl_2014<-NA
+AOI_cells_ntl@data$ntl_2014=AOI_cells_ntl@data$ntl_2013+AOI_cells_ntl@data$ntltrend_0913
+AOI_cells_ntl@data$neg2014[AOI_cells_ntl@data$ntl_2014<0]<-1
+AOI_cells_ntl@data$ntl_2014[AOI_cells_ntl@data$neg2014==1]<-0
 #create ntl pre-trend for 1992-2003
-AOI_cells_ntl$ntl_pretrend<-timeRangeTrend(AOI_cells_ntl,"ncc4_[0-9][0-9][0-9][0-9]e",1992,2007,"ID","y")
+AOI_cells_ntl$ntl_pretrend<-timeRangeTrend(AOI_cells_ntl,"ntl_[0-9][0-9][0-9][0-9]",1992,2007,"ID")
 #create non-shape file and rename to something obvious
 ntl<-AOI_cells_ntl@data
-for (i in 2:length(ntl)) {
-  
-  if (substr(colnames(ntl)[i], 1, 4) == "ncc4"){
-    
-    name = "NTL"
-    year = substr(colnames(ntl)[i], 6, 9)
-    dt = paste(name,"_",year,sep="")
-    colnames(ntl)[i] <- dt
-  }
-}
+# for (i in 2:length(ntl)) {
+#   
+#   if (substr(colnames(ntl)[i], 1, 4) == "n"){
+#     
+#     name = "NTL"
+#     year = substr(colnames(ntl)[i], 6, 9)
+#     dt = paste(name,"_",year,sep="")
+#     colnames(ntl)[i] <- dt
+#   }
+# }
 
 #convert it from wide to long form and reshape into panel
-ntl_late<-ntl[c(1,82:105,107)]
-ntl_long <- grep("NTL", names(ntl_late))
-ntl_reshape <- c(ntl_long)
-ntl_panel <- reshape(ntl_late, varying=ntl_reshape,direction="long", idvar="ID", sep="_", timevar="Year")
+#ntl_late<-ntl[c(1,82:105,107)]
+ntl_long <- ntl[c(1,11:23,25)]
+ntl_reshape <- grep("^ntl_",names(ntl_long))
+ntl_panel <- reshape(ntl_long, varying=ntl_reshape,direction="long", idvar="ID", sep="_", timevar="Year")
 ntl_panel$NTL_2007<-NA
-ntl_panel$NTL_2007<-ntl_panel$NTL[ntl_panel$Year==2007]
+ntl_panel$NTL_2007<-ntl_panel$ntl[ntl_panel$Year==2007]
+#rename ntl column to NTL to match var names in the analysis script
+colnames(ntl_panel)<-sub("ntl","NTL",colnames(ntl_panel))
+#add pre-trends back into ntl_panel before merge with larger panel dataset
+ntl_trends<- ntl[c(1,24,27)]
+ntl_panel1<-merge(ntl_panel,ntl_trends)
+ntl_panel<-ntl_panel1
 #merge into Panel_Data_add
 Panel_Data_add1<-merge(Panel_Data_add,ntl_panel,by=c("ID","Year"))
 
@@ -604,5 +616,6 @@ Panel_Data_add<-Panel_Data_add1
 
 #write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
 #Panel_Data<-read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
-write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
+#write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
+write.csv(Panel_Data_add,"/Users/rbtrichler/Box Sync/MacArthur/tanzania_infra_add_oct2017.csv")
 

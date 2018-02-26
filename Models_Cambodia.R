@@ -16,7 +16,9 @@ library(pastecs)
 ##Panel Data, Thresh=10
 #Panel_Data <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia.csv")
 #Panel_Data_add <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/cambodia_panel_data_add.csv")
-Panel_Data_add <-read.csv("/Users/rbtrichler/Documents/AidData/Git Repos/MacArthur/modelData/cambodia_panel_data_add.csv")
+#Panel_Data_add <-read.csv("/Users/rbtrichler/Documents/AidData/Git Repos/MacArthur/modelData/cambodia_panel_data_add.csv")
+Panel_Data_add <-read.csv("/Users/rbtrichler/Box Sync/MacArthur/modelData/cambodia_infra_add_oct2017.csv")
+
 Panel_Data<-Panel_Data_add
 
 #Add Post-2003 indicator

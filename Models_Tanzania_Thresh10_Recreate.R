@@ -717,7 +717,8 @@ Panel_Data_add<-Panel_Data_add1
 
 #write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
 #Panel_Data<-read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
-write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
+#write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
+write.csv(Panel_Data_add,"/Users/rbtrichler/Box Sync/MacArthur/tanzania_infra_add_oct2017.csv")
 
 
 #-----

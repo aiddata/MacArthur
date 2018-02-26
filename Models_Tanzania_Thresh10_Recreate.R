@@ -16,6 +16,7 @@ library(devtools)
 devtools::install_github("itpir/SCI@master")
 library(SCI)
 
+# custom SCI timeRangeTrend function (rewrite of what is available in SCI package to work with this datset)
 rename_header <- function(x,sub)
 {
   t <- paste(substr(x, 1, 0), sub, substr(x, 1, nchar(x)), sep = "")
@@ -99,8 +100,6 @@ timeRangeTrend <- function(dta,prefix,startyr,endyr,IDfield, formatT, ...)
   return(dta@data$newfieldID)
   
 }
-
-AOI_cells_ntl$ntltrend_0913<-timeRangeTrend(AOI_cells_ntl,"ntl_[0-9][0-9][0-9][0-9]",2009,2013,"ID","y")
 
 
 #---------------------------------------------------#
@@ -658,8 +657,13 @@ names(Panel_Data_add)[names(Panel_Data_add)=="gpw_v4_density.2000.mean"]="Pop_20
 
 ##merge in updated dmsp ntl that matches 2001-2014 years of Panel_Data to merge into main dataset
 #original ntl data that was merged in was incorrect, new ntl data merged in oct 2017
+#results with this ntl data will NOT MATCH macarthur working paper regression results
+
 #read in nighttime lights data and rename columns 
-source("SciClone_functions.R")
+
+# (commented out source below because redid timeRangeTrend function directly in this dataset (at top))
+#source("SciClone_functions.R")
+
 ntl<- read.csv(paste(active_dir_path,"/ntl_extracts/merge_africa_grid2.csv",sep=""))
 colnames(ntl)<-sub("v4composites_calibrated_201709.","ntl_",colnames(ntl))
 colnames(ntl)<-gsub(".mean","",colnames(ntl))
@@ -713,20 +717,11 @@ Panel_Data_add<-Panel_Data_add1
 
 #write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
 #Panel_Data<-read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
-#write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
-write.csv(Panel_Data_add,"/Users/rbtrichler/Box Sync/MacArthur/modelData/tanzania_infra_add_feb2018.csv")
+write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
 
 
 #-----
 ## SCRATCH ##
 #------
 
-# ntl scratch#
-ntl0913<-AOI_cells_ntl@data[c("ID","ntl_2009","ntl_2010","ntl_2011","ntl_2012","ntl_2013")]
-ntl0913trend<-reshape(ntl0913,varying=c("ntl_2009","ntl_2010","ntl_2011","ntl_2012","ntl_2013"),direction="long", idvar="ID", sep="_", timevar="Year")
-
-ntltrendmodel_0913<-lm (ntl~Year, data=ntl0913trend)
-#end ntl scratch#
-
-ntl5<- read.csv(paste(active_dir_path,"/ntl_extracts/merge_africa_grid_2013.csv",sep=""))
 

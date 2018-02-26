@@ -12,6 +12,97 @@ library(multiwayvcov)
 library(lmtest)
 library(reshape2)
 
+library(devtools)
+devtools::install_github("itpir/SCI@master")
+library(SCI)
+
+rename_header <- function(x,sub)
+{
+  t <- paste(substr(x, 1, 0), sub, substr(x, 1, nchar(x)), sep = "")
+  substr(t, 1, nchar(t))
+}
+
+timeRangeTrend <- function(dta,prefix,startyr,endyr,IDfield, formatT, ...)
+{
+  grep_str = paste(IDfield,prefix,sep="|")
+  tDF <- dta@data[grepl(grep_str,names(dta@data))]
+  
+
+  
+  dta_IDs <- unique(grep(paste(prefix,collapse="|"), 
+                         names(tDF)))
+    
+  names(tDF)[dta_IDs]<- 
+    sapply(
+      names(tDF)[dta_IDs], 
+      function(x) {
+        rename_header(x, substrRight(x,0))
+      }
+    )
+  
+  
+  analysisDF <- melt(tDF,id=c(IDfield))
+  
+  print(head(analysisDF))
+  #cleaned GREP
+  new_pre <- gsub("[0-9]","",prefix,fixed=TRUE)
+  new_pre<- 
+    sapply(
+      new_pre, 
+      function(x) {
+        rename_header(x, substrRight(x,0))
+      }
+    )
+  print(new_pre)
+  if(formatT == "y")
+  {
+    analysisDF["Year"] <- lapply(analysisDF["variable"],FUN=function(x) as.numeric(gsub(new_pre,"",x)))
+    
+    analysisDF <- analysisDF[analysisDF["Year"] >= startyr ,]
+    analysisDF <- analysisDF[analysisDF["Year"] <= endyr ,]
+  }
+  
+  print(head(analysisDF))
+  if(formatT == "ym")
+  {
+    analysisDF["Year"] <- lapply(analysisDF["variable"],FUN=function(x) as.numeric(gsub(new_pre,"",substr(as.character(x), 1, nchar(as.character(x))-2))))
+    analysisDF <- analysisDF[analysisDF["Year"] >= startyr ,]
+    analysisDF <- analysisDF[analysisDF["Year"] <= endyr ,]
+    first_year <- min(analysisDF["Year"])
+    analysisDF["Month"] <- lapply(analysisDF["variable"],FUN=function(x) as.numeric(gsub(new_pre,"",substr(as.character(x), nchar(as.character(x))-1, nchar(as.character(x))))))
+    
+    analysisDF["OldYear"] <- analysisDF["Year"]
+    analysisDF["Year"] <- analysisDF["Year"] + 1
+    
+    analysisDF["ID_lm"] <- lapply(analysisDF["Year"], FUN=function(x) x - first_year) 
+    analysisDF["ID_lmb"] <- (analysisDF["ID_lm"] * 12) +(analysisDF["Month"][[1]])
+    analysisDF["Year"] <- analysisDF["ID_lmb"]
+    
+    
+  }
+  #pc41_198001e
+  
+  dta@data["newfieldID"] <- 0
+  for (i in 1:length(dta))
+  {
+    ID <- as.character(dta@data[IDfield][i,])
+    #Fit trend model
+    ID_dat <- analysisDF[analysisDF[IDfield] == ID,]
+    trend_mod <- lm(value ~ Year,data=ID_dat)
+    
+    dta@data["newfieldID"][i,] <- summary(trend_mod)$coefficients[2]
+    #print(summary(trend_mod))
+    #plot(ID_dat$Year, ID_dat$value)
+    #abline(trend_mod)
+    
+  }
+  return(dta@data$newfieldID)
+  
+}
+
+AOI_cells_ntl$ntltrend_0913<-timeRangeTrend(AOI_cells_ntl,"ntl_[0-9][0-9][0-9][0-9]",2009,2013,"ID","y")
+
+
 #---------------------------------------------------#
 #Settings
 #---------------------------------------------------#
@@ -92,7 +183,7 @@ Mac_spdf <- Mac_status
 # Mac_160<- Mac_160[Mac_160@data$project_id!="1919",]
 # Mac_spdf <- Mac_160
 
-write.csv(Mac_spdf@data,"/Users/rbtrichler/Box Sync/MacArthur/Mac_spdf_TanzInfra.csv")
+#write.csv(Mac_spdf@data,"/Users/rbtrichler/Box Sync/MacArthur/Mac_spdf_TanzInfra.csv")
 #write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_TanzaniaInfra.csv")
 #writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Tanzania.shp")
 
@@ -163,6 +254,7 @@ AOI_cells$thresh_weightedDist <- colSums(decay_dMatrix_adj) / 1000
 # AOI_cells <- AOI_cells2
 
 #writePolyShape(AOI_cells, "/home/aiddata/Desktop/Github/MacArthur/modelData/AOI_cells_Tanzania.shp")
+writePolyShape(AOI_cells, "/Users/rbtrichler/Box Sync/MacArthur/modelData/AOI_cells_Tanzania.shp")
 
 #--------------------------------------------------#
 #Calculate the over-time treatment effects
@@ -523,6 +615,8 @@ for(i in 1:length(Panel_Data[[1]]))
 write.csv(Panel_Data,"/Users/rbtrichler/Box Sync/MacArthur/tanzania_infra_oct2017.csv")
 #write.csv(Panel_Data,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_AUG.csv")
 
+Panel_Data <- read.csv("/Users/rbtrichler/Box Sync/MacArthur/modelData/tanzania_infra_oct2017.csv")
+
 #-------------------------------------------------
 #Add in additional data directly into panel dataset from AFRcells#
 #Population, Baseline Protected Areas, Nighttime Lights#
@@ -573,14 +667,16 @@ colnames(ntl)<-gsub(".mean","",colnames(ntl))
 #uses timeRangeTrend from SCI which doesn't work for data.frame format
 AOI_cells_ntl<-AOI_cells[1]
 AOI_cells_ntl<-merge(AOI_cells_ntl,ntl,by.x="ID",by.y="ID")
-AOI_cells_ntl$ntltrend_0913<-timeRangeTrend(AOI_cells_ntl,"ntl_[0-9][0-9][0-9][0-9]",2009,2013,"ID")
+AOI_cells_ntl$ntltrend_0913<-timeRangeTrend(AOI_cells_ntl,"ntl_[0-9][0-9][0-9][0-9]",2009,2013,"ID","y")
 
 AOI_cells_ntl@data$ntl_2014<-NA
 AOI_cells_ntl@data$ntl_2014=AOI_cells_ntl@data$ntl_2013+AOI_cells_ntl@data$ntltrend_0913
 AOI_cells_ntl@data$neg2014[AOI_cells_ntl@data$ntl_2014<0]<-1
 AOI_cells_ntl@data$ntl_2014[AOI_cells_ntl@data$neg2014==1]<-0
+
+
 #create ntl pre-trend for 1992-2003
-AOI_cells_ntl$ntl_pretrend<-timeRangeTrend(AOI_cells_ntl,"ntl_[0-9][0-9][0-9][0-9]",1992,2007,"ID")
+AOI_cells_ntl$ntl_pretrend<-timeRangeTrend(AOI_cells_ntl,"ntl_[0-9][0-9][0-9][0-9]",1992,2007,"ID","y")
 #create non-shape file and rename to something obvious
 ntl<-AOI_cells_ntl@data
 # for (i in 2:length(ntl)) {
@@ -604,6 +700,7 @@ ntl_panel$NTL_2007<-ntl_panel$ntl[ntl_panel$Year==2007]
 #rename ntl column to NTL to match var names in the analysis script
 colnames(ntl_panel)<-sub("ntl","NTL",colnames(ntl_panel))
 #add pre-trends back into ntl_panel before merge with larger panel dataset
+#pulls out id, ntltrend_0913, ntl_pretrend from ntl
 ntl_trends<- ntl[c(1,24,27)]
 ntl_panel1<-merge(ntl_panel,ntl_trends)
 ntl_panel<-ntl_panel1
@@ -617,5 +714,19 @@ Panel_Data_add<-Panel_Data_add1
 #write.csv(Panel_Data, "/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
 #Panel_Data<-read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
 #write.csv(Panel_Data_add,"/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv")
-write.csv(Panel_Data_add,"/Users/rbtrichler/Box Sync/MacArthur/tanzania_infra_add_oct2017.csv")
+write.csv(Panel_Data_add,"/Users/rbtrichler/Box Sync/MacArthur/modelData/tanzania_infra_add_feb2018.csv")
+
+
+#-----
+## SCRATCH ##
+#------
+
+# ntl scratch#
+ntl0913<-AOI_cells_ntl@data[c("ID","ntl_2009","ntl_2010","ntl_2011","ntl_2012","ntl_2013")]
+ntl0913trend<-reshape(ntl0913,varying=c("ntl_2009","ntl_2010","ntl_2011","ntl_2012","ntl_2013"),direction="long", idvar="ID", sep="_", timevar="Year")
+
+ntltrendmodel_0913<-lm (ntl~Year, data=ntl0913trend)
+#end ntl scratch#
+
+ntl5<- read.csv(paste(active_dir_path,"/ntl_extracts/merge_africa_grid_2013.csv",sep=""))
 

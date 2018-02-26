@@ -16,7 +16,7 @@ library(lmtest)
 #Panel_Data_infra <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra.csv")
 #Panel_Data_infra_add <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add.csv")
 #Panel_Data_infra_add_aug<- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_infra_panel_data_add_AUG.csv") 
-Panel_Data<-read.csv("/Users/rbtrichler/Box Sync/MacArthur/tanzania_infra_add_oct2017.csv")
+Panel_Data<-read.csv("/Users/rbtrichler/Box Sync/MacArthur/modelData/tanzania_infra_add_oct2017.csv")
 
 Panel_Data <- Panel_Data_infra_add_aug
 Panel_Data_soc <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc_ONLY_AUG.csv")

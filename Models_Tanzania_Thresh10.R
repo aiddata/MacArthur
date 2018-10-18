@@ -498,14 +498,14 @@ CMREG159 <- coeftest(Model159, cluster159)
 #WORKING PAPER SUMMARY STATS#
 #rename vars directly in html file
 #infra treatment stats table
-stargazer(Panel_Data_infra, type = "html", nobs = TRUE, mean.sd = TRUE, median = TRUE,
+stargazer(Panel_Data, type = "html", nobs = TRUE, mean.sd = TRUE, median = TRUE,
           iqr = TRUE,
           keep=c("Forest_Loss_additive","DecayYr_additive","DecayYr100_additive","ProjCnt100_additive",
                  "DecayAddControl","DecayAddControl100"))
 #infra covars stats table
 stargazer(Panel_Data,type="html", 
           keep=c("MinTemp","MinPrecip","Max","Mean","Elevation","Slope","UrbTravTime","ntl_pretrend","NTL",
-                 "Pop","Pct","PreLevelControl","PreTrendControl"))
+                 "Pop","wdpapct","PreLevelControl","PreTrendControl"))
 
 #soc treatment stats table
 stargazer(Panel_Data_soc, type = "html", nobs = TRUE, mean.sd = TRUE, median = TRUE,

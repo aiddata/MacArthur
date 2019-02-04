@@ -64,3 +64,40 @@ dependencies
 2. run extract merge script  
 `python ./sciclone_data/merge_data.py`
 
+## /modelData
+
+Correlograms
+- graphs that plot how connected historical NDVI values are in cells at different distances from each other (e.g. how related are historical NDVI values in cells that are 5 km away from each other vs. 100km away from each other) and gives a value to represent that. 
+- We use the correlograms to construct the continuous treatment variable, such that the "coefficient of relatedness" (the value on the y-axis at a given distance between any two cells shown on the x axis) is multiplied by the distance from a cell to a project location, to calculate a treatment value. This value grows over time as more projects become active. We exclude any projects as being too far away if they exceed the distance determined by when the correlogram line crosses the x-axis (and thus the "coefficient of relatedness" is equal to 0).
+- Correlogram graphs are calculated using all cells in a country. They only need to be recalculated if the historical NDVI values change.
+
+Datasets
+- includes the data used to run the analytical models for MacArthur, if we have them (some were lost on the desktop where this data was stored)
+- cambodia_panel_data_add.csv is the panel dataset used to create the Cambodia Infrastructure Regression Results (Table 3) in the original MacArthur working paper. **Note that the DMSP values extracted for this dataset are factually incorrect! ** The dataset with updated DMSP ntl values can be found in the MacArthur Box Sync folder, /modelData/cambodia_infra_add_oct2017.csv" but the regression results will not match any models from the Working Paper that include ntl baseline or pre-trend values.
+
+## Scripts to Merge Spatial Data and Produce Panel Datasets
+
+MacArthur_Paper_Analysis_CAMBODIA
+- original script to build the Cambodia panel dataset
+- Does not work! R functions and data sources have changed
+- Replaced with script "MacArthur_Paper_Analysis_Cambodia_Thresh10_Recreate"
+
+MacArthur_Paper_Analysis_Cambodia_Thresh10_Recreate
+- replaces original script used to create panel dataset for analysis
+- updated file paths when input data was moved to Box Sync folder called "MacArthur" (though some input data still exists in Git Repo as well)
+- updated functions for things like TimeRangeTrend that referenced out of date R package built by Dan
+- includes DMSP ntl data updated in fall 2017 (though still have old DMSP data extracts)
+- never used to produce any reports, working papers, etc.
+
+
+## Scripts for Model Analysis
+
+Models_Cambodia.R 
+- model analysis for Cambodia infrastructure sector
+- includes many models, but Stargazer code at end was used to output results tables in the Working Paper (which also identifies which of the models we used for the working paper)
+
+
+
+
+
+

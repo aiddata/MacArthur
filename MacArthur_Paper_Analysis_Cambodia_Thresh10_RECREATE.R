@@ -180,6 +180,8 @@ Mac_spdf <- Mac_sector
 Mac_status <- Mac_spdf[Mac_spdf@data$status_code%in%c("2","3"),]
 Mac_spdf <- Mac_status
 
+#write.csv(Mac_spdf@data, "/Users/rbtrichler/Box Sync/MacArthur/Mac_spdf_Cambodia_recreate.csv")
+
 #write.csv(Mac_spdf@data,"/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia.csv")
 #writePointsShape(Mac_spdf, "/home/aiddata/Desktop/Github/MacArthur/modelData/Mac_spdf_Cambodia.shp")
 

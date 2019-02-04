@@ -82,7 +82,24 @@ MacArthur_Paper_Analysis_CAMBODIA
 - Does not work! R functions and data sources have changed
 - Replaced with script "MacArthur_Paper_Analysis_Cambodia_Thresh10_Recreate"
 
-MacArthur_Paper_Analysis_Cambodia_Thresh10_Recreate
+MacArthur_Paper_Analysis_Cambodia_Thresh10_RECREATE
+- replaces original script used to create panel dataset for analysis
+- updated file paths when input data was moved to Box Sync folder called "MacArthur" (though some input data still exists in Git Repo as well)
+- updated functions for things like TimeRangeTrend that referenced out of date R package built by Dan
+- includes DMSP ntl data updated in fall 2017 (though still have old DMSP data extracts)
+- never used to produce any reports, working papers, etc.
+
+MacArthur_Paper_Analysis_Tanzania_Thresh10_RECREATE
+- Tanzania infrastructure sector
+- replaces original script used to create panel dataset for analysis
+- updated file paths when input data was moved to Box Sync folder called "MacArthur" (though some input data still exists in Git Repo as well)
+- updated functions for things like TimeRangeTrend that referenced out of date R package built by Dan
+- includes DMSP ntl data updated in fall 2017 (though still have old DMSP data extracts)
+- never used to produce any reports, working papers, etc.
+
+MacArthur_Paper_Analysis_Tanzania_Thresh10_RECREATE
+** This is not working correctly - does not recreate dataset with the right number of cells that is the same as what we have in the working paper (final panel dataset has 315,028 cells instead of the 300,314 shown in the working paper). Somewhere in the script it's filtering incorrectly, but not taking time to correct since we have to totally rework how we build the scripts and run the analysis anyway.
+- Tanzania social sector
 - replaces original script used to create panel dataset for analysis
 - updated file paths when input data was moved to Box Sync folder called "MacArthur" (though some input data still exists in Git Repo as well)
 - updated functions for things like TimeRangeTrend that referenced out of date R package built by Dan
@@ -94,8 +111,11 @@ MacArthur_Paper_Analysis_Cambodia_Thresh10_Recreate
 
 Models_Cambodia.R 
 - model analysis for Cambodia infrastructure sector
-- includes many models, but Stargazer code at end was used to output results tables in the Working Paper (which also identifies which of the models we used for the working paper)
+- includes many models, but Stargazer code at end was used to output summary stats and results tables in the Working Paper (and so also identifies which of the models we used for the working paper)
 
+Models_Tanzania_Thresh10.R
+- model analysis for Tanzania infrastructure and social sector
+- includes many models, but Stargazer code at end was used to output summary stats and results tables in the Working Paper (and so also identifies which of the models we used for the working paper)
 
 
 

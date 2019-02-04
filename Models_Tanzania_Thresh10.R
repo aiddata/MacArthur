@@ -19,8 +19,11 @@ library(lmtest)
 Panel_Data<-read.csv("/Users/rbtrichler/Box Sync/MacArthur/modelData/tanzania_infra_add_oct2017.csv")
 
 Panel_Data <- Panel_Data_infra_add_aug
+
+# Read in social sector panel data and then merge with infrastructure sector
 #Panel_Data_soc <- read.csv("/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_soc_ONLY_AUG.csv")
-Panel_Data_soc<-read.csv("/Users/rbtrichler/Box Sync/MacArthur/tanzania_soc_oct2017.csv")
+# **Tried to recreate the social sector data -- IT IS NOT CORRECT to the number of cells from original analysis -- something incorrect in panel data build script!
+#Panel_Data_soc<-read.csv("/Users/rbtrichler/Box Sync/MacArthur/testdata/tanzania_soc_oct2017.csv")
 
 
 ## Subset social sector panel data and rename columns to prepare for merge with infrastructure panel dataset 

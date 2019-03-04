@@ -216,7 +216,7 @@ minDistKm <- mean(col_mins) / 1000
 
 #save (correlogram_data, file="/home/aiddata/Desktop/Github/MacArthur/modelData/tanzania_correl.RData")
 
-load("modelData/tanzania_correl.RData")
+load("/Users/rbtrichler/Box Sync/MacArthur/modelData/tanzania_correl.RData")
 
 #save data into a function to calculate the distance-decay penalty later.
 #Chinese projects are "weighted" according to their distance.
